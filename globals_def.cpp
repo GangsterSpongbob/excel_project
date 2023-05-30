@@ -1,45 +1,91 @@
 #include <iostream>
+#include <cstring>
+#include <exception>
+#include <cmath>
 
 #include "globals.h"
-#include "cell.h"
+
+void copy_string(char *&dest, const char *src)
+{
+    delete[] dest;
+    if (src != nullptr)
+    {
+        dest = new char[strlen(src) + 1];
+        strcpy(dest, src);
+    }
+    else
+    {
+        dest = nullptr;
+    }
+}
 
 bool is_whole(const char *whole)
 {
-    int index{};
-    if (whole[index] == '-' || whole[index] == '+')
-        index++;
-    while (whole[index] != '\0')
-        if (whole[index] < '0' || whole[index] > '9')
-            return 0;
+    if (whole == nullptr || whole[0] == '\0')
+    {
+        return 0;
+    }
 
-    return 1;
+    int index{0}, digit_count{0};
+    if (whole[index] == '-' || whole[index] == '+')
+    {
+        index++;
+    }
+
+    while (whole[index] != '\0')
+    {
+        if (whole[index] >= '0' && whole[index] <= '9')
+        {
+            digit_count++;
+        }
+
+        else
+        {
+            return false;
+        }
+        index++;
+    }
+
+    return digit_count;
 }
 
 bool is_float(const char *flo)
 {
-    int index{}, dot_count{};
+    if (flo == nullptr || flo[0] == '\0')
+    {
+        return 0;
+    }
+
+    int index{0}, dot_count{0}, digit_count{0};
     if (flo[index] == '-' || flo[index] == '+')
+    {
         index++;
+    }
 
     while (flo[index] != '\0' && dot_count <= 1)
     {
         if (flo[index] == '.')
         {
             dot_count++;
-            index++;
-            continue;
+        }
+        else if (flo[index] >= '0' && flo[index] <= '9')
+        {
+            digit_count++;
+        }
+        else
+        {
+            return false;
         }
 
-        if (flo[index] < '0' || flo[index] > '9')
-            return 0;
+        index++;
     }
 
-    return dot_count <= 1;
+    return dot_count == 1 && digit_count > 0;
 }
 
 bool is_string(const char *str)
 {
-    return (str[0] == '/"') && (str[strlen(str - 1) == '/"']);
+    return (str[0] == '"') && (str[strlen(str) - 1 == '"']) && strlen(str) >= 2;
 }
 
 bool is_formula(const char *str)
@@ -47,42 +93,85 @@ bool is_formula(const char *str)
     return str[0] == '=';
 }
 
-void printData(const Cell &src)
+long str_to_whole(const char *str)
 {
-    switch (src.getType())
+    try
     {
-    case DataType::Integer:
-        std::cout << src.getLongData() << '\n';
-        return;
-    case DataType::FloatingPoint:
-        std::cout << src.getDoubleData() << '\n';
-        return;
-    case DataType::CharString:
-        std::cout << src.getStringData() << '\n';
-        return;
-    case DataType::Formula:
-        std::cout << src.getStringData() << '\n';
-        return;
+        if (str == nullptr || str[0] == '\0' || !is_whole(str))
+        {
+            throw std::invalid_argument("Invaid string format or non-existent string!");
+        }
 
-    default:
-        return;
+        size_t index{0};
+        bool negative{str[0] == '-'};
+        long long result{0};
+
+        if (str[index] == '-' || str[index] == '+')
+        {
+            index++;
+        }
+
+        while (str[index] != '\0')
+        {
+            result = result * 10 + (str[index++] - '0');
+        }
+
+        return negative ? -result : result;
+    }
+
+    catch (const std::exception &ia)
+    {
+        std::cerr << ia.what() << '\n';
+        return 0;
     }
 }
 
-int countChars(long src)
+double str_to_float(const char *str)
 {
-    if (!src)
-        return 1;
-
-    int count{src < 0}; // count '-' if negative
-    while (src)
+    try
     {
-        src /= 10;
-        ++count;
-    }
-    return count;
-}
+        if (str == nullptr || str[0] == '\0' || !is_float(str))
+        {
+            throw std::invalid_argument("Invaid string format or non-existent string!");
+        }
 
-int countChars(double src)
-{
+        size_t index{0}, digits_after_dot{0};
+        bool negative{str[0] == '-'}, dot_met{0};
+        double result{0};
+
+        if (str[index] == '-' || str[index] == '+')
+        {
+            index++;
+        }
+
+        while (str[index] != '\0')
+        {
+            if (str[index] != '.')
+            {
+                result = result * 10.0 + (str[index] - '0');
+                if (dot_met)
+                {
+                    digits_after_dot++;
+                }
+            }
+            else
+            {
+                dot_met = 1;
+            }
+            index++;
+        }
+
+        for (size_t i = 0; i < digits_after_dot; i++)
+        {
+            result /= 10.0;
+        }
+
+        return negative ? -result : result;
+    }
+
+    catch (const std::exception &ia)
+    {
+        std::cerr << ia.what() << '\n';
+        return 0.0;
+    }
 }

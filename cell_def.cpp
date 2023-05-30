@@ -6,29 +6,26 @@
 
 void Cell::free()
 {
-    switch (_type)
+    if (_type == DataType::Integer)
     {
-    case DataType::CharString:
-        delete _data.string_value;
-        _data.string_value = nullptr;
-        break;
-    case DataType::Formula:
-        delete _data.string_value;
-        _data.string_value = nullptr;
-        break;
-    case DataType::Integer:
         _data.long_value = 0;
-        break;
-    case DataType::FloatingPoint:
-        _data.double_value = 0;
-        break;
-
-    default:
-        break;
     }
+    else if (_type == DataType::FloatingPoint)
+    {
+        _data.double_value = 0.0;
+    }
+    else
+    {
+        delete[] _data.string_value;
+        _data.string_value = nullptr;
+    }
+
+    _type = DataType::Invalid;
+    delete[] _text;
+    _text = nullptr;
 }
 
-DataType Cell::getType() const
+DataType Cell::get_type() const
 {
     return _type;
 }
@@ -36,49 +33,71 @@ DataType Cell::getType() const
 void Cell::copy_from(const Cell &src)
 {
     _type = src._type;
-    switch (_type)
+    copy_string(_text, src._text);
+
+    if (_type == DataType::Integer)
     {
-    case DataType::Integer:
         _data.long_value = src._data.long_value;
-        break;
-    case DataType::FloatingPoint:
+    }
+    else if (_type == DataType::FloatingPoint)
+    {
         _data.double_value = src._data.double_value;
-        break;
-    case DataType::CharString:
-        _data.string_value = new char[strlen(src._data.string_value) + 1];
-        strcpy(_data.string_value, src._data.string_value);
-        break;
-    case DataType::Formula:
-        _data.string_value = new char[strlen(src._data.string_value) + 1];
-        strcpy(_data.string_value, src._data.string_value);
-        break;
-    default:
-        break;
+    }
+    else
+    {
+        copy_string(_data.string_value, src._data.string_value);
     }
 }
 
-char *Cell::getStringData() const
+char *Cell::get_string_data() const
 {
     return _data.string_value;
 }
 
-long Cell::getLongData() const
+long Cell::get_long_data() const
 {
     return _data.long_value;
 }
 
-double Cell::getDoubleData() const
+double Cell::get_double_data() const
 {
     return _data.double_value;
 }
 
-Cell::Cell() : _type(DataType::Integer), _data(0L) {}
+// template <typename T>
+// T *Cell::get_data() const;
 
-Cell::Cell(const long &src = 0) : _type(DataType::Integer), _data(src) {}
+Cell::Cell() : _type(DataType::Invalid), _text(new char[1]{}) { _data.string_value = nullptr; }
 
-Cell::Cell(const double &src) : _type(DataType::FloatingPoint), _data(src) {}
-
-Cell::Cell(const char *src) : _type(is_formula(src) ? DataType::Formula : DataType::CharString), _data(src) {}
+Cell::Cell(const char *input)
+{
+    copy_string(_text, input);
+    if (is_whole(input))
+    {
+        _type = DataType::Integer;
+        _data.long_value = str_to_whole(input);
+    }
+    else if (is_float(input))
+    {
+        _type = DataType::FloatingPoint;
+        _data.double_value = str_to_float(input);
+    }
+    else if (is_string(input))
+    {
+        _type = DataType::CharString;
+        copy_string(_data.string_value, input);
+    }
+    else if (is_formula(input))
+    {
+        _type = DataType::Formula;
+        copy_string(_data.string_value, input);
+    }
+    else
+    {
+        _type = DataType::Invalid;
+        _data.string_value = nullptr;
+    }
+}
 
 Cell::Cell(const Cell &src)
 {
@@ -103,4 +122,9 @@ Cell &Cell::operator=(const Cell &src)
 Cell::~Cell()
 {
     free();
+}
+
+void Cell::print_data() const
+{
+    std::cout << _text << '\n';
 }
