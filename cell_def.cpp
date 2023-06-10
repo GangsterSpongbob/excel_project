@@ -1,8 +1,8 @@
-#include <cstring>
+#include "cell.h"
+
 #include <iostream>
 
 #include "globals.h"
-#include "cell.h"
 
 void Cell::free()
 {
@@ -33,7 +33,8 @@ DataType Cell::get_type() const
 void Cell::copy_from(const Cell &src)
 {
     _type = src._type;
-    copy_string(_text, src._text);
+    delete[] _text;
+    copy_dynamic_str(_text, src._text);
 
     if (_type == DataType::Integer)
     {
@@ -45,7 +46,8 @@ void Cell::copy_from(const Cell &src)
     }
     else
     {
-        copy_string(_data.string_value, src._data.string_value);
+        delete[] _data.string_value;
+        copy_dynamic_str(_data.string_value, src._data.string_value);
     }
 }
 
@@ -71,7 +73,7 @@ Cell::Cell() : _type(DataType::Invalid), _text(new char[1]{}) { _data.string_val
 
 Cell::Cell(const char *input)
 {
-    copy_string(_text, input);
+    copy_dynamic_str(_text, input);
     if (is_whole(input))
     {
         _type = DataType::Integer;
@@ -85,12 +87,12 @@ Cell::Cell(const char *input)
     else if (is_string(input))
     {
         _type = DataType::CharString;
-        copy_string(_data.string_value, input);
+        copy_dynamic_str(_data.string_value, input);
     }
     else if (is_formula(input))
     {
         _type = DataType::Formula;
-        copy_string(_data.string_value, input);
+        copy_dynamic_str(_data.string_value, input);
     }
     else
     {
@@ -124,7 +126,7 @@ Cell::~Cell()
     free();
 }
 
-void Cell::print_data() const
+char *Cell::get_text() const
 {
-    std::cout << _text << '\n';
+    return _text;
 }

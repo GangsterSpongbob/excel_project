@@ -1,22 +1,51 @@
+#include "globals.h"
+
 #include <iostream>
 #include <cstring>
 #include <exception>
-#include <cmath>
+// #include <cmath>
 
-#include "globals.h"
-
-void copy_string(char *&dest, const char *src)
+void copy_dynamic_str(char *&dest, const char *src)
 {
-    delete[] dest;
     if (src != nullptr)
     {
         dest = new char[strlen(src) + 1];
-        strcpy(dest, src);
+        strncpy(dest, src, strlen(src) + 1);
     }
     else
     {
         dest = nullptr;
     }
+}
+
+char *remove_whitespaces(char *src)
+{
+    if (src == nullptr)
+    {
+        return nullptr;
+    }
+
+    char *start{src};
+    while (*start == ' ' || *start == '\t')
+    {
+        ++start;
+    }
+
+    char *end{start + strlen(start)};
+    while (end > start && (*(end - 1) == ' ' || *(end - 1) == '\t'))
+    {
+        --end;
+    }
+
+    char *dest{new char[end - start + 1]};
+    size_t index{0};
+    while (start + index != end)
+    {
+        *(dest + index) = *(start + index);
+        ++index;
+    }
+    *(dest + index) = '\0';
+    return dest;
 }
 
 bool is_whole(const char *whole)

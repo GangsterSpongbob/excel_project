@@ -1,5 +1,5 @@
-#pragma once
-#include <cstring>
+#ifndef CELL_H
+#define CELL_H
 
 enum class DataType
 {
@@ -34,5 +34,7 @@ public:
     Cell &operator=(const Cell &);
     ~Cell();
 
-    void print_data() const;
+    char *get_text() const;
 };
+
+#endif // CELL_H
