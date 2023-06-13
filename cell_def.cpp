@@ -1,8 +1,9 @@
 #include "cell.h"
 
 #include <iostream>
+#include <cstring>
 
-#include "globals.h"
+#include "utils.h"
 
 void Cell::free()
 {
@@ -33,8 +34,16 @@ DataType Cell::get_type() const
 void Cell::copy_from(const Cell &src)
 {
     _type = src._type;
-    delete[] _text;
-    copy_dynamic_str(_text, src._text);
+    if (src._text != nullptr)
+    {
+        delete[] _text;
+        _text = new char[strlen(src._text) + 1];
+        strncpy(_text, src._text, strlen(src._text) + 1);
+    }
+    else
+    {
+        _text = nullptr;
+    }
 
     if (_type == DataType::Integer)
     {
@@ -47,7 +56,11 @@ void Cell::copy_from(const Cell &src)
     else
     {
         delete[] _data.string_value;
-        copy_dynamic_str(_data.string_value, src._data.string_value);
+        if (src._data.string_value != nullptr)
+        {
+            _data.string_value = new char[strlen(src._data.string_value) + 1];
+            strncpy(_data.string_value, src._data.string_value, strlen(src._data.string_value) + 1);
+        }
     }
 }
 
@@ -73,7 +86,16 @@ Cell::Cell() : _type(DataType::Invalid), _text(new char[1]{}) { _data.string_val
 
 Cell::Cell(const char *input)
 {
-    copy_dynamic_str(_text, input);
+    if (input != nullptr)
+    {
+        _text = new char[strlen(input) + 1];
+        strncpy(_text, input, strlen(input) + 1);
+    }
+    else
+    {
+        _text = nullptr;
+    }
+
     if (is_whole(input))
     {
         _type = DataType::Integer;
@@ -87,12 +109,28 @@ Cell::Cell(const char *input)
     else if (is_string(input))
     {
         _type = DataType::CharString;
-        copy_dynamic_str(_data.string_value, input);
+        if (input != nullptr)
+        {
+            _data.string_value = new char[strlen(input) + 1];
+            strncpy(_data.string_value, input, strlen(input) + 1);
+        }
+        else
+        {
+            _data.string_value = nullptr;
+        }
     }
     else if (is_formula(input))
     {
         _type = DataType::Formula;
-        copy_dynamic_str(_data.string_value, input);
+        if (input != nullptr)
+        {
+            _data.string_value = new char[strlen(input) + 1];
+            strncpy(_data.string_value, input, strlen(input) + 1);
+        }
+        else
+        {
+            _data.string_value = nullptr;
+        }
     }
     else
     {
@@ -128,5 +166,89 @@ Cell::~Cell()
 
 char *Cell::get_text() const
 {
-    return _text;
+    if (_text != nullptr)
+    {
+        return _text;
+    }
+    else
+    {
+        return utils::empty_string;
+    }
+}
+
+const char *type_to_char(const DataType &c1)
+{
+    const char *output = nullptr;
+
+    switch (c1)
+    {
+    case DataType::Integer:
+        output = "Integer";
+        break;
+    case DataType::FloatingPoint:
+        output = "Float";
+        break;
+    case DataType::CharString:
+        output = "String";
+        break;
+    case DataType::Formula:
+        output = "Formula";
+        break;
+    case DataType::Invalid:
+        output = "Invalid";
+        break;
+    default:
+        output = "Broke";
+        break;
+    }
+
+    return output;
+}
+
+const Cell *parse_row(const char *line, size_t cell_count)
+{
+    Cell *cells = new Cell[cell_count];
+
+    size_t cell_index{0}, line_index{0};
+
+    const size_t buffer_size{1024};
+    char text_buffer[buffer_size]{};
+
+    try
+    {
+        while (line[line_index] != '\0' && cell_index < cell_count)
+        {
+            size_t buffer_index{0};
+            while (line[line_index] != ',' && line[line_index] != '\0' && buffer_index < buffer_size)
+            {
+                if (buffer_index > buffer_size - 1)
+                {
+                    throw std::runtime_error("Line size exceeds buffer capacity!");
+                }
+
+                if (line[line_index] == '"')
+                {
+                    do
+                    {
+                        text_buffer[buffer_index++] = line[line_index++];
+                    } while (line[line_index] != '"' && line[line_index] != '\0' && buffer_index < buffer_size);
+                }
+
+                text_buffer[buffer_index++] = line[line_index++];
+            }
+            text_buffer[buffer_index] = '\0';
+            cells[cell_index++] = Cell(remove_whitespaces(text_buffer));
+            text_buffer[0] = '\0';
+            if (line[line_index] == ',')
+            {
+                line_index++;
+            }
+        }
+    }
+
+    catch (const std::runtime_error &ex)
+    {
+        std::cerr << ex.what() << '\n';
+    }
+    return cells;
 }

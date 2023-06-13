@@ -1,28 +1,19 @@
-#include "globals.h"
+#include "utils.h"
 
 #include <iostream>
 #include <cstring>
 #include <exception>
-// #include <cmath>
 
-void copy_dynamic_str(char *&dest, const char *src)
+namespace utils
 {
-    if (src != nullptr)
-    {
-        dest = new char[strlen(src) + 1];
-        strncpy(dest, src, strlen(src) + 1);
-    }
-    else
-    {
-        dest = nullptr;
-    }
+    char empty_string[1]{""};
 }
 
 char *remove_whitespaces(char *src)
 {
     if (src == nullptr)
     {
-        return nullptr;
+        return nullptr; // Look into returning empty_string
     }
 
     char *start{src};

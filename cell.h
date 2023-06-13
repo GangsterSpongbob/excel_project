@@ -1,6 +1,8 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include <iostream>
+
 enum class DataType
 {
     Integer,
@@ -9,6 +11,8 @@ enum class DataType
     Formula,
     Invalid
 };
+
+extern const char *type_to_char(const DataType &);
 
 class Cell
 {
@@ -28,6 +32,7 @@ public:
     char *get_string_data() const;
     double get_double_data() const;
     long get_long_data() const;
+
     Cell();
     Cell(const char *);
     Cell(const Cell &);
@@ -36,5 +41,7 @@ public:
 
     char *get_text() const;
 };
+
+extern const Cell *parse_row(const char *, size_t);
 
 #endif // CELL_H
