@@ -6,57 +6,42 @@
 #include "utils.h"
 #include "table.h"
 
-void test_table_constructor()
-{
-    // Test 1: Valid input file
-    {
-        std::ifstream inputFile("test1.csv");
-        Table table(inputFile);
-        inputFile.close();
+// void test_formula(const char *formula)
+// {
+//     std::ifstream in_file("test1.csv");
+//     Table table(in_file);
+//     in_file.close();
 
-        std::cout << "Test 1: Printing table:\n";
-        table.print_dimensions();
-        table.print_table();
-        table.print_types();
+//     table.mod_with_formula(0, 0, formula);
+// }
 
-        std::ofstream outputFile("test1out.csv");
-        table.write_to_file(outputFile);
-        outputFile.close();
+// void test_number_to_str()
+// {
+//     char buffer1[100];
 
-        std::ifstream input2("test1out.csv");
-        Table table2(input2);
-        input2.close();
+//     number_to_str(buffer1, 0);
+//     std::cout << buffer1 << "\n\n\n";
 
-        std::cout << "Test 1: Re-Printing table:\n";
-        table2.print_dimensions();
-        table2.print_table();
-        table2.print_types();
-    }
+//     char buffer2[100];
+//     number_to_str(buffer2, -123456789);
+//     std::cout << buffer2 << "\n\n\n";
 
-    // Test 2: Empty input file
-    {
-        std::ifstream inputFile("test2.csv");
-        Table table(inputFile);
-        inputFile.close();
+//     char buffer3[100];
+//     number_to_str(buffer3, 987654321);
+//     std::cout << buffer3 << "\n\n\n";
 
-        std::cout << "Test 2: Printing table:\n";
-        table.print_dimensions();
-        table.print_table();
-        table.print_types();
-    }
+//     char buffer4[100];
+//     number_to_str(buffer4, -3.14159);
+//     std::cout << buffer4 << "\n\n\n";
 
-    // Test 3: Input file with multiple rows and columns
-    {
-        std::ifstream inputFile("test3.csv");
-        Table table(inputFile);
-        inputFile.close();
+//     char buffer5[100];
+//     number_to_str(buffer5, 123.456);
+//     std::cout << buffer5 << "\n\n\n";
 
-        std::cout << "Test 3: Printing table:\n";
-        table.print_dimensions();
-        table.print_table();
-        table.print_types();
-    }
-}
+//     char buffer6[100];
+//     number_to_str(buffer6, 0.0000123456);
+//     std::cout << buffer6 << "\n\n\n";
+// }
 
 int main()
 {

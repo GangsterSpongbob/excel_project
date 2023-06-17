@@ -1,27 +1,23 @@
- $ Added changelog.txt to track changes in detail;
- $ Added Readme.md, which is ot be updated with project information
-
- $ Removed copy_text() funciton;
- $ Table::print_table() now only prints Cell::_text and not _type, also improved borders;
- $ Added two new functions to class Table: print_dimensions() and print_types();
- $ Added Table::full_print(), which combines print_dimensions(), print_table() and print_types();
- $ Moved function declaration of const char *type_to_char() to cell.h and definition to cell_def.cpp respectively;
- $ Renamed globals.h to utils.h and globals_def.cpp to utils_def.cpp;
- $ Replaced function parse_cell() with parse_row(), which parses a row and returns a Cell array;
- $ Added Table::write_to_file(), that writes table data as comma separated values to a file;
- $ Added copy constructor and operator= for Table class;
- $ Added table getter functions for rows and cols;
- $ Added user_interface() funciton that takes user input and manipulates Table objects accordingly;
- $ Added an empty_string[1]{} char variable in the utils.h as a global variable for empty strings to avoid memory leaks;
- $ Class cell's get_text() function now returns pointer to empty_string if _text is nullptr;
- $ Added get_text_by_index() function for the Table class;
+ $ Removed DataType::Formula;
+ $ Cell read from file cannot be of type Formula;
+ $ Added private: evaluate_expression() to class Table;
+ $ Added public: mod_with_formula() to class Table, to work with evaluate_expression();
+ $ Added long_to_str() that takes long data and writes it to a char pointer;
+ $ Added number_to_str() that can take double or long and write it to char*;
+ $ Added void reverse_string();
+ $ Added get_numeric_data() to class Cell, and get_numeric_data_by_index to class Table;
+ $ Added is_numeric() and is_operator(), designed to use with evaluate_expression();
+ $ Added string_is_valid_formula() to class Table;
+ $ Cell data can now successfully be edited with formulas;
+ $ The Cell::get_text(), Cell::get_string_data() and Table::get_text_by_index() are now const;
 
  to implement:
  ** Urgent:
 
  ** Future implementation reminders:
- # Fix Formula() recognition;
  # Move user_interface into separate functions;
  # implement move constructors for Cell and Table
  # Table should return no '"' at beginning and end if value is string and "" if it is invalid;
- # remove_whitespaces() Might return empty_string in the case of nullptr;
+ # remove_whitespaces() Might return empty_string in the case of nullptr; // Maybe not?
+ # Change char* funtions to const char* returning "" values where possible;
+ # Create 1024 byte string class?; // Not really needed

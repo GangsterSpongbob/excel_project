@@ -8,7 +8,6 @@ enum class DataType
     Integer,
     FloatingPoint,
     CharString,
-    Formula,
     Invalid
 };
 
@@ -25,21 +24,22 @@ private:
         double double_value;
         char *string_value;
     } _data;
+
     void free(), copy_from(const Cell &);
 
 public:
     DataType get_type() const;
-    char *get_string_data() const;
+    double get_numeric_value() const;
+    const char *get_string_data() const;
     double get_double_data() const;
     long get_long_data() const;
+    const char *get_text() const;
 
     Cell();
     Cell(const char *);
     Cell(const Cell &);
     Cell &operator=(const Cell &);
     ~Cell();
-
-    char *get_text() const;
 };
 
 extern const Cell *parse_row(const char *, size_t);

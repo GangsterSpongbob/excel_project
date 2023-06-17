@@ -64,7 +64,23 @@ void Cell::copy_from(const Cell &src)
     }
 }
 
-char *Cell::get_string_data() const
+double Cell::get_numeric_value() const
+{
+    if (_type == DataType::Integer)
+    {
+        return _data.long_value;
+    }
+    else if (_type == DataType::FloatingPoint)
+    {
+        return _data.double_value;
+    }
+    else
+    {
+        return 0.0;
+    }
+}
+
+const char *Cell::get_string_data() const
 {
     return _data.string_value;
 }
@@ -119,19 +135,6 @@ Cell::Cell(const char *input)
             _data.string_value = nullptr;
         }
     }
-    else if (is_formula(input))
-    {
-        _type = DataType::Formula;
-        if (input != nullptr)
-        {
-            _data.string_value = new char[strlen(input) + 1];
-            strncpy(_data.string_value, input, strlen(input) + 1);
-        }
-        else
-        {
-            _data.string_value = nullptr;
-        }
-    }
     else
     {
         _type = DataType::Invalid;
@@ -164,7 +167,7 @@ Cell::~Cell()
     free();
 }
 
-char *Cell::get_text() const
+const char *Cell::get_text() const
 {
     if (_text != nullptr)
     {
@@ -190,9 +193,6 @@ const char *type_to_char(const DataType &c1)
         break;
     case DataType::CharString:
         output = "String";
-        break;
-    case DataType::Formula:
-        output = "Formula";
         break;
     case DataType::Invalid:
         output = "Invalid";

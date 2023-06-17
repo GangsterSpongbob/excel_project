@@ -195,3 +195,107 @@ double str_to_float(const char *str)
         return 0.0;
     }
 }
+
+bool is_operator(char c)
+{
+    return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
+}
+
+bool is_numeric(char c)
+{
+    return (c >= '0' && c <= '9') || c == '.';
+}
+
+void reverse_string(char *rev)
+{
+    if (rev == nullptr)
+    {
+        return;
+    }
+
+    size_t start{0};
+    size_t end{strlen(rev) - 1};
+
+    while (start <= end)
+    {
+        char temp{rev[start]};
+        rev[start++] = rev[end];
+        rev[end--] = temp;
+    }
+}
+
+void long_to_str(char *buffer, long src)
+{
+    if (src == 0)
+    {
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return;
+    }
+
+    bool is_negative{0};
+    size_t index{0};
+
+    if (src < 0)
+    {
+        is_negative = 1;
+        src = -src;
+    }
+
+    while (src != 0)
+    {
+        int digit = src % 10;
+        buffer[index++] = '0' + digit;
+        src /= 10;
+    }
+
+    if (is_negative)
+    {
+        buffer[index++] = '-';
+    }
+
+    buffer[index] = '\0';
+    reverse_string(buffer);
+}
+
+void number_to_str(char *dest, double src)
+{
+    long whole_part{(long)src};
+    double fractional_part{std::abs(src - whole_part)};
+
+    const double difference_buffer{0.0001};
+    if (fractional_part < difference_buffer)
+    {
+        long_to_str(dest, whole_part);
+        return;
+    }
+
+    const double fract_to_long{10000};
+    fractional_part *= fract_to_long;
+
+    const size_t buffer_size{64};
+    char fract_string[buffer_size]{};
+    long_to_str(fract_string, (long)fractional_part);
+
+    size_t index{strlen(fract_string) - 1};
+
+    while (index > 0 && fract_string[index] == '0')
+    {
+        fract_string[index] = '\0';
+    }
+
+    char whole_string[buffer_size]{};
+    long_to_str(whole_string, whole_part);
+
+    // Check if dest is large enough!
+    for (size_t i = 0; i < strlen(whole_string); i++)
+    {
+        dest[i] = whole_string[i];
+    }
+    dest[strlen(whole_string)] = '.';
+    for (size_t i = 0; i < strlen(fract_string); i++)
+    {
+        dest[strlen(whole_string) + 1 + i] = fract_string[i];
+    }
+    dest[strlen(whole_string) + strlen(fract_string) + 1] = '\0';
+}

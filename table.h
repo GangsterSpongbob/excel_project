@@ -13,22 +13,34 @@ private:
     Cell *cells;
 
     void free();
-    void count_rows_cols(std::ifstream &);
-    // char *parse_cell(const char *, size_t &);
-    void build_table(std::ifstream &);
     void copy_from(const Table &);
+
+    void count_rows_cols(std::ifstream &);
+    void build_table(std::ifstream &);
+
+    double evaluate_expression(const char *) const;
 
 public:
     Table();
     Table(std::ifstream &);
     Table(const Table &);
     Table &operator=(const Table &);
-    void print_table() const, print_types() const, print_dimensions() const;
-    char *get_text_by_index(size_t, size_t) const;
-    void write_to_file(std::ofstream &) const;
+
+    void print_table() const;
+    void print_types() const;
+    void print_dimensions() const;
     void full_print() const;
+
+    const char *get_text_by_index(size_t, size_t) const;
+    double get_numeric_value_by_index(size_t, size_t) const;
     size_t get_rows() const, get_cols() const;
-    void mod_cell(size_t, size_t, char *);
+
+    void write_to_file(std::ofstream &) const;
+
+    void mod_cell(size_t, size_t, char *); // const char* ?
+    void mod_with_formula(size_t, size_t, const char *);
+    bool string_is_valid_formula(const char *);
+
     ~Table();
 };
 
