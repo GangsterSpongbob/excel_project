@@ -1,23 +1,14 @@
- $ Removed DataType::Formula;
- $ Cell read from file cannot be of type Formula;
- $ Added private: evaluate_expression() to class Table;
- $ Added public: mod_with_formula() to class Table, to work with evaluate_expression();
- $ Added long_to_str() that takes long data and writes it to a char pointer;
- $ Added number_to_str() that can take double or long and write it to char*;
- $ Added void reverse_string();
- $ Added get_numeric_data() to class Cell, and get_numeric_data_by_index to class Table;
- $ Added is_numeric() and is_operator(), designed to use with evaluate_expression();
- $ Added string_is_valid_formula() to class Table;
- $ Cell data can now successfully be edited with formulas;
- $ The Cell::get_text(), Cell::get_string_data() and Table::get_text_by_index() are now const;
+ $ Moved user_interface and formula-related functions to new files;
+ $ Implemented a move constructor and move assignment operator for class Cell;
+ $ Implemented a move constructor and move assignment operator for class Table;
+ $ Fixed minor memory leak in remove_whitespaces();
+ $ Fixed minor memory leak in parse_row();
+ $ Added get_cout_of_invalid_values() and print_invalid_values() to class Table();
+ $ user_interface() now prompts the user to change invalid cell data;
+ $ print_table() prints text with no '"' if it is valid string data and "" if it is DataType::Invalid;
 
  to implement:
  ** Urgent:
 
  ** Future implementation reminders:
- # Move user_interface into separate functions;
- # implement move constructors for Cell and Table
- # Table should return no '"' at beginning and end if value is string and "" if it is invalid;
- # remove_whitespaces() Might return empty_string in the case of nullptr; // Maybe not?
- # Change char* funtions to const char* returning "" values where possible;
- # Create 1024 byte string class?; // Not really needed
+ # Rename variables and functions so they have matching names;

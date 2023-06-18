@@ -13,30 +13,31 @@ char *remove_whitespaces(char *src)
 {
     if (src == nullptr)
     {
-        return nullptr; // Look into returning empty_string
+        return nullptr;
     }
 
-    char *start{src};
-    while (*start == ' ' || *start == '\t')
+    char *dest = src;
+    char *runner = src;
+
+    while (*runner == ' ' || *runner == '\t')
     {
-        ++start;
+        ++runner;
     }
 
-    char *end{start + strlen(start)};
-    while (end > start && (*(end - 1) == ' ' || *(end - 1) == '\t'))
+    while (*runner != '\0')
     {
-        --end;
+        *dest++ = *runner++;
     }
 
-    char *dest{new char[end - start + 1]};
-    size_t index{0};
-    while (start + index != end)
+    --dest;
+    while (dest >= src && (*dest == ' ' || *dest == '\t'))
     {
-        *(dest + index) = *(start + index);
-        ++index;
+        --dest;
     }
-    *(dest + index) = '\0';
-    return dest;
+
+    *(dest + 1) = '\0';
+
+    return src;
 }
 
 bool is_whole(const char *whole)
@@ -213,15 +214,30 @@ void reverse_string(char *rev)
         return;
     }
 
+    size_t length = strlen(rev);
+    char *copy = new char[length + 1];
+    strncpy(copy, rev, length + 1);
+
     size_t start{0};
-    size_t end{strlen(rev) - 1};
+    size_t end{length - 1};
 
     while (start <= end)
     {
-        char temp{rev[start]};
-        rev[start++] = rev[end];
-        rev[end--] = temp;
+        if (start == end)
+        {
+            break;
+        }
+        else
+        {
+            char temp{copy[start]};
+            copy[start++] = copy[end];
+            copy[end--] = temp;
+        }
     }
+
+    strncpy(rev, copy, length + 1);
+
+    delete[] copy;
 }
 
 void long_to_str(char *buffer, long src)

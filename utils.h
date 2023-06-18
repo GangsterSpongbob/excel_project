@@ -1,8 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "table.h"
-
 namespace utils
 {
     extern char empty_string[1];

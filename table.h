@@ -24,33 +24,28 @@ public:
     Table();
     Table(std::ifstream &);
     Table(const Table &);
+    Table(Table &&);
     Table &operator=(const Table &);
+    Table &operator=(Table &&);
 
     void print_table() const;
     void print_types() const;
     void print_dimensions() const;
-    void full_print() const;
+    void print_invalid_cells() const;
+    void full_print() const; // Currently unused
 
     const char *get_text_by_index(size_t, size_t) const;
     double get_numeric_value_by_index(size_t, size_t) const;
     size_t get_rows() const, get_cols() const;
+    size_t get_count_of_invalid_cells() const;
 
     void write_to_file(std::ofstream &) const;
 
-    void mod_cell(size_t, size_t, char *); // const char* ?
-    void mod_with_formula(size_t, size_t, const char *);
+    bool mod_cell(size_t, size_t, char *);
+    bool mod_with_formula(size_t, size_t, const char *);
     bool string_is_valid_formula(const char *);
 
     ~Table();
 };
-
-extern Table open_table(const char *);
-extern void edit_cell(const char *);
-extern void save_table();
-extern void save_table_as(const char *);
-extern void close_table();
-extern void exit();
-
-extern void user_interface();
 
 #endif // TABLE_H

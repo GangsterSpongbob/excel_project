@@ -25,7 +25,8 @@ private:
         char *string_value;
     } _data;
 
-    void free(), copy_from(const Cell &);
+    void free();
+    void copy_from(const Cell &);
 
 public:
     DataType get_type() const;
@@ -38,10 +39,12 @@ public:
     Cell();
     Cell(const char *);
     Cell(const Cell &);
+    Cell(Cell &&);
     Cell &operator=(const Cell &);
+    Cell &operator=(Cell &&);
     ~Cell();
 };
 
-extern const Cell *parse_row(const char *, size_t);
+extern void parse_row(const char *, Cell *, size_t);
 
 #endif // CELL_H
