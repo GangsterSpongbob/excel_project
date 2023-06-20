@@ -67,7 +67,7 @@ void Table::build_table(std::ifstream &file_in)
     file_in.seekg(0, std::ios::beg);
 }
 
-void Table::count_rows_cols(std::ifstream &file_in)
+void Table::count_rows_and_cols(std::ifstream &file_in)
 {
     rows = cols = 1;
     if (!file_in.is_open())
@@ -134,7 +134,7 @@ Table::Table(std::ifstream &file_in) : rows(0), cols(0), cells(nullptr)
         return;
     }
 
-    count_rows_cols(file_in);
+    count_rows_and_cols(file_in);
 
     file_in.clear();
     file_in.seekg(0, std::ios::beg);
@@ -196,7 +196,7 @@ bool Table::mod_cell(size_t row_index, size_t col_index, char *input_data)
         return 0;
     }
 
-    if (!is_whole(input_data) && !is_float(input_data) && !is_string(input_data))
+    if (!str_is_whole_number(input_data) && !str_is_decimal_number(input_data) && !str_is_in_quotes(input_data))
     {
         return 0;
     }
@@ -349,7 +349,7 @@ size_t Table::get_cols() const
 
 void Table::print_dimensions() const
 {
-    std::cout << "Rows: " << rows << ", Cols: " << cols << '\n'; //
+    std::cout << "Rows: " << rows << ", Cols: " << cols << '\n';
 }
 
 void Table::print_invalid_cells() const
@@ -393,8 +393,10 @@ const char *Table::get_text_by_index(size_t row_index, size_t col_index) const
     {
         return cells[row_index * cols + col_index].get_text();
     }
-
-    return utils::empty_string;
+    else
+    {
+        return utils::empty_string;
+    }
 }
 
 double Table::get_numeric_value_by_index(size_t row_index, size_t col_index) const

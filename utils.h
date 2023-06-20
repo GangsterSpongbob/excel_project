@@ -8,13 +8,13 @@ namespace utils
 
 extern char *remove_whitespaces(char *);
 
-extern bool is_string(const char *);
-extern bool is_whole(const char *);
-extern bool is_float(const char *);
-extern bool is_formula(const char *);
+extern bool str_is_in_quotes(const char *);
+extern bool str_is_whole_number(const char *);
+extern bool str_is_decimal_number(const char *);
+extern bool str_is_formula(const char *);
 
-extern bool is_operator(char);
-extern bool is_numeric(char);
+extern bool char_is_operator(char);
+extern bool char_is_numeric(char);
 
 extern long str_to_whole(const char *);
 extern double str_to_float(const char *);

@@ -112,17 +112,17 @@ Cell::Cell(const char *input)
         _text = nullptr;
     }
 
-    if (is_whole(input))
+    if (str_is_whole_number(input))
     {
         _type = DataType::Integer;
         _data.long_value = str_to_whole(input);
     }
-    else if (is_float(input))
+    else if (str_is_decimal_number(input))
     {
         _type = DataType::FloatingPoint;
         _data.double_value = str_to_float(input);
     }
-    else if (is_string(input))
+    else if (str_is_in_quotes(input))
     {
         if (input != nullptr)
         {
@@ -253,28 +253,19 @@ const char *Cell::get_text() const
 
 const char *type_to_char(const DataType &c1)
 {
-    const char *output = nullptr;
-
     switch (c1)
     {
     case DataType::Integer:
-        output = "Integer";
-        break;
+        return "Integer";
     case DataType::FloatingPoint:
-        output = "Float";
-        break;
+        return "Float";
     case DataType::CharString:
-        output = "String";
-        break;
+        return "String";
     case DataType::Invalid:
-        output = "Invalid";
-        break;
+        return "Invalid";
     default:
-        output = "Broke"; // Deffinitely shouldn't happen
-        break;
+        return "Broke";
     }
-
-    return output;
 }
 
 void parse_row(const char *line, Cell *cells, size_t cell_count)

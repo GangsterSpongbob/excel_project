@@ -83,22 +83,22 @@ double Table::evaluate_expression(const char *calc) const
                 line_index++;
             }
 
-            else if (is_numeric(calc[line_index]))
+            else if (char_is_numeric(calc[line_index]))
             {
                 char current_number[small_string_buffer_size]{};
                 size_t digit_index{0};
 
-                while (is_numeric(calc[line_index]) && calc[line_index] != '\0')
+                while (char_is_numeric(calc[line_index]) && calc[line_index] != '\0')
                 {
                     current_number[digit_index++] = calc[line_index++];
                 }
 
-                if (!last_was_number && is_whole(current_number))
+                if (!last_was_number && str_is_whole_number(current_number))
                 {
                     numbers_stack_1[numbers_index++] = str_to_whole(current_number);
                     last_was_number = 1;
                 }
-                else if (!last_was_number && is_float(current_number))
+                else if (!last_was_number && str_is_decimal_number(current_number))
                 {
                     numbers_stack_1[numbers_index++] = str_to_float(current_number);
                     last_was_number = 1;
@@ -136,7 +136,7 @@ double Table::evaluate_expression(const char *calc) const
                     col_index[col_char_index++] = calc[line_index++];
                 }
 
-                if (!is_whole(row_index) || !is_whole(col_index))
+                if (!str_is_whole_number(row_index) || !str_is_whole_number(col_index))
                 {
                     throw std::invalid_argument("Invalid cell indice.");
                 }
@@ -160,7 +160,7 @@ double Table::evaluate_expression(const char *calc) const
                 last_was_number = 1;
             }
 
-            else if (is_operator(calc[line_index]))
+            else if (char_is_operator(calc[line_index]))
             {
                 operators_stack_1[operators_index++] = calc[line_index++];
                 last_was_number = 0;
@@ -342,7 +342,7 @@ bool Table::string_is_valid_formula(const char *expression)
     }
 }
 
-bool Table::mod_with_formula(size_t row_index, size_t col_index, const char *expression)
+bool Table::mod_cell_with_formula(size_t row_index, size_t col_index, const char *expression)
 {
     double mod_value;
     try

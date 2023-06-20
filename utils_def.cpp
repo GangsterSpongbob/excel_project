@@ -16,7 +16,6 @@ char *remove_whitespaces(char *src)
         return nullptr;
     }
 
-    char *dest = src;
     char *runner = src;
 
     while (*runner == ' ' || *runner == '\t')
@@ -24,6 +23,7 @@ char *remove_whitespaces(char *src)
         ++runner;
     }
 
+    char *dest = src;
     while (*runner != '\0')
     {
         *dest++ = *runner++;
@@ -40,19 +40,20 @@ char *remove_whitespaces(char *src)
     return src;
 }
 
-bool is_whole(const char *whole)
+bool str_is_whole_number(const char *whole)
 {
     if (whole == nullptr || whole[0] == '\0')
     {
         return 0;
     }
 
-    int index{0}, digit_count{0};
+    size_t index{0};
     if (whole[index] == '-' || whole[index] == '+')
     {
         index++;
     }
 
+    size_t digit_count{0};
     while (whole[index] != '\0')
     {
         if (whole[index] >= '0' && whole[index] <= '9')
@@ -70,19 +71,21 @@ bool is_whole(const char *whole)
     return digit_count;
 }
 
-bool is_float(const char *flo)
+bool str_is_decimal_number(const char *flo)
 {
     if (flo == nullptr || flo[0] == '\0')
     {
         return 0;
     }
 
-    int index{0}, dot_count{0}, digit_count{0};
+    size_t index{0};
     if (flo[index] == '-' || flo[index] == '+')
     {
         index++;
     }
 
+    size_t dot_count{0};
+    size_t digit_count{0};
     while (flo[index] != '\0' && dot_count <= 1)
     {
         if (flo[index] == '.')
@@ -104,12 +107,12 @@ bool is_float(const char *flo)
     return dot_count == 1 && digit_count > 0;
 }
 
-bool is_string(const char *str)
+bool str_is_in_quotes(const char *str)
 {
     return (str[0] == '"') && (str[strlen(str) - 1 == '"']) && strlen(str) >= 2;
 }
 
-bool is_formula(const char *str)
+bool str_is_formula(const char *str)
 {
     return str[0] == '=';
 }
@@ -118,7 +121,7 @@ long str_to_whole(const char *str)
 {
     try
     {
-        if (str == nullptr || str[0] == '\0' || !is_whole(str))
+        if (str == nullptr || str[0] == '\0' || !str_is_whole_number(str))
         {
             throw std::invalid_argument("Invaid string format or non-existent string!");
         }
@@ -151,7 +154,7 @@ double str_to_float(const char *str)
 {
     try
     {
-        if (str == nullptr || str[0] == '\0' || !is_float(str))
+        if (str == nullptr || str[0] == '\0' || !str_is_decimal_number(str))
         {
             throw std::invalid_argument("Invaid string format or non-existent string!");
         }
@@ -197,12 +200,12 @@ double str_to_float(const char *str)
     }
 }
 
-bool is_operator(char c)
+bool char_is_operator(char c)
 {
     return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
 }
 
-bool is_numeric(char c)
+bool char_is_numeric(char c)
 {
     return (c >= '0' && c <= '9') || c == '.';
 }
@@ -250,24 +253,39 @@ void long_to_str(char *buffer, long src)
     }
 
     bool is_negative{0};
-    size_t index{0};
-
     if (src < 0)
     {
         is_negative = 1;
         src = -src;
     }
 
+    size_t index{0};
+
     while (src != 0)
     {
         int digit = src % 10;
-        buffer[index++] = '0' + digit;
+        try
+        {
+            buffer[index++] = '0' + digit;
+        }
+        catch (const std::out_of_range &oor)
+        {
+            buffer[index - 2] = '\0';
+            break;
+        }
         src /= 10;
     }
 
     if (is_negative)
     {
-        buffer[index++] = '-';
+        try
+        {
+            buffer[index++] = '-';
+        }
+        catch (const std::out_of_range &oor)
+        {
+            buffer[index - 2] = '\0';
+        }
     }
 
     buffer[index] = '\0';
@@ -303,15 +321,39 @@ void number_to_str(char *dest, double src)
     char whole_string[buffer_size]{};
     long_to_str(whole_string, whole_part);
 
-    // Check if dest is large enough!
     for (size_t i = 0; i < strlen(whole_string); i++)
     {
-        dest[i] = whole_string[i];
+        try
+        {
+            dest[i] = whole_string[i];
+        }
+        catch (const std::out_of_range &oor)
+        {
+            dest[i - 1] = '\0';
+            break;
+        }
     }
-    dest[strlen(whole_string)] = '.';
+
+    try
+    {
+        dest[strlen(whole_string)] = '.';
+    }
+    catch (const std::out_of_range &oor)
+    {
+    }
+
     for (size_t i = 0; i < strlen(fract_string); i++)
     {
-        dest[strlen(whole_string) + 1 + i] = fract_string[i];
+        try
+        {
+            dest[strlen(whole_string) + 1 + i] = fract_string[i];
+        }
+        catch (const std::out_of_range &oor)
+        {
+            dest[strlen(whole_string) + i] = '\0';
+            break;
+        }
     }
+
     dest[strlen(whole_string) + strlen(fract_string) + 1] = '\0';
 }

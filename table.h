@@ -15,7 +15,7 @@ private:
     void free();
     void copy_from(const Table &);
 
-    void count_rows_cols(std::ifstream &);
+    void count_rows_and_cols(std::ifstream &);
     void build_table(std::ifstream &);
 
     double evaluate_expression(const char *) const;
@@ -36,13 +36,14 @@ public:
 
     const char *get_text_by_index(size_t, size_t) const;
     double get_numeric_value_by_index(size_t, size_t) const;
-    size_t get_rows() const, get_cols() const;
+    size_t get_rows() const;
+    size_t get_cols() const;
     size_t get_count_of_invalid_cells() const;
 
     void write_to_file(std::ofstream &) const;
 
     bool mod_cell(size_t, size_t, char *);
-    bool mod_with_formula(size_t, size_t, const char *);
+    bool mod_cell_with_formula(size_t, size_t, const char *);
     bool string_is_valid_formula(const char *);
 
     ~Table();

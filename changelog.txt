@@ -1,14 +1,10 @@
- $ Moved user_interface and formula-related functions to new files;
- $ Implemented a move constructor and move assignment operator for class Cell;
- $ Implemented a move constructor and move assignment operator for class Table;
- $ Fixed minor memory leak in remove_whitespaces();
- $ Fixed minor memory leak in parse_row();
- $ Added get_cout_of_invalid_values() and print_invalid_values() to class Table();
- $ user_interface() now prompts the user to change invalid cell data;
- $ print_table() prints text with no '"' if it is valid string data and "" if it is DataType::Invalid;
+ $ Added range checks in str_to_whole() and str_to_float();
+ $ Minor readability changes and rearangements;
+ $ Renamed some variables and functions;
 
  to implement:
  ** Urgent:
 
  ** Future implementation reminders:
  # Rename variables and functions so they have matching names;
+ # Move user_interface() and evaluate_expression() into separate functions;

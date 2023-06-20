@@ -108,7 +108,7 @@ void user_interface()
             std::cout << "Enter row index starting from 1: ";
             long row_index;
             std::cin.getline(text_buffer, buffer_size);
-            if (is_whole(remove_whitespaces(text_buffer)))
+            if (str_is_whole_number(remove_whitespaces(text_buffer)))
             {
                 row_index = str_to_whole(remove_whitespaces(text_buffer)) - 1;
                 if (row_index < 0 || row_index > current_table.get_rows())
@@ -126,7 +126,7 @@ void user_interface()
             long col_index;
             std::cout << "Enter column index starting from 1: ";
             std::cin.getline(text_buffer, buffer_size);
-            if (is_whole(remove_whitespaces(text_buffer)))
+            if (str_is_whole_number(remove_whitespaces(text_buffer)))
             {
                 col_index = str_to_whole(remove_whitespaces(text_buffer)) - 1;
                 if (col_index < 0 || col_index > current_table.get_cols())
@@ -145,7 +145,7 @@ void user_interface()
             std::cout << "Enter new data for cell (" << row_index << ',' << col_index << "): ";
             std::cin.getline(text_buffer, buffer_size);
 
-            if (is_string(text_buffer) || is_whole(text_buffer) || is_float(text_buffer))
+            if (str_is_in_quotes(text_buffer) || str_is_whole_number(text_buffer) || str_is_decimal_number(text_buffer))
             {
                 if (current_table.mod_cell(row_index, col_index, remove_whitespaces(text_buffer)))
                 {
@@ -158,7 +158,7 @@ void user_interface()
             }
             else if (current_table.string_is_valid_formula(text_buffer))
             {
-                if (current_table.mod_with_formula(row_index, col_index, remove_whitespaces(text_buffer)))
+                if (current_table.mod_cell_with_formula(row_index, col_index, remove_whitespaces(text_buffer)))
                 {
                     strncpy(msg, "Cell updated successfully!\n", buffer_size);
                 }
