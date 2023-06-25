@@ -1,6 +1,6 @@
  # CSV_Parser
 
- ###Description:
+ ### Description:
  This is the repository for my Comma-Separated Value file parser. The worikings are simple: The program reads values from a text file and forms a table, where each comma separates two columns and each new line is a new row in the table respectively.
  
  It has a simple UI, that takes user input and manipulates files and tables accordingly. It supports the following funcalities:
@@ -19,7 +19,7 @@
 
  7. exit - terminates and exits the program.
 
- ###Disclaimer!
+ ### Disclaimer!
  The intended use of the UI functions, only requires calling the function by name (Example: "open", not "open (some name)"). If an incorrectly formatted command is entered the user will be prompted to do so again.
 
  ##### Author: Angel Ivanov
