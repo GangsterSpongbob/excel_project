@@ -21,6 +21,7 @@ public:
     void copy_from(const char *);
     void clear();
     Buffer_string remove_quotes();
+    Buffer_string add_quotes();
 
     bool is_empty() const;
     bool is_whole() const;

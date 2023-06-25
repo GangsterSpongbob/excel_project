@@ -210,7 +210,15 @@ void Table::write_to_file(std::ofstream &file_out) const
     {
         for (size_t j = 0; j < cols; j++)
         {
-            file_out << cells[i * cols + j].get_text();
+            if (cells[i * cols + j].get_type() == DataType::Quoted)
+            {
+                file_out << cells[i * cols + j].get_text().add_quotes();
+            }
+            else
+            {
+                file_out << cells[i * cols + j].get_text();
+            }
+
             if (j != cols - 1)
             {
                 file_out << ',';

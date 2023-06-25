@@ -72,15 +72,32 @@ Buffer_string Buffer_string::remove_quotes()
         return *this;
     }
 
-    for (size_t i = 0; i < capacity - 2; i++)
+    Buffer_string dest;
+    for (size_t i = 1; i < capacity - 1; i++)
     {
-        text[i] = text[i + 1];
+        dest.append(text[i]);
     }
-    text[capacity - 2] = '\0';
-    text[capacity - 1] = '\0';
-    capacity -= 2;
 
-    return *this;
+    return dest;
+}
+
+Buffer_string Buffer_string::add_quotes()
+{
+    if (is_quoted())
+    {
+        return *this;
+    }
+
+    Buffer_string dest;
+
+    dest.append('"');
+    for (size_t i = 0; i < capacity; i++)
+    {
+        dest.append(text[i]);
+    }
+    dest.append('"');
+
+    return dest;
 }
 
 Buffer_string Buffer_string::reverse() const
