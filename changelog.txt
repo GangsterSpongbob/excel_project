@@ -1,10 +1,12 @@
- $ Added range checks in str_to_whole() and str_to_float();
- $ Minor readability changes and rearangements;
- $ Renamed some variables and functions;
+ $ Implemented class Buffer_string for static char arrays with a const limited size;
+ $ Replaced most instances of char * arrays with Buffer_string;
+ $ Renamed more variables and functions;
+ $ Added 5 more global char[] variables to string_utils.h;
+ $ type_to_char() now returns utils string variables;
+ $ Cell objects now only have a single _value of type double;
 
  to implement:
  ** Urgent:
 
  ** Future implementation reminders:
- # Rename variables and functions so they have matching names;
  # Move user_interface() and evaluate_expression() into separate functions;

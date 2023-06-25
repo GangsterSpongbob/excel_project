@@ -1,10 +1,11 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <iostream>
 #include <fstream>
 
 #include "cell.h"
+
+using expression_value = double;
 
 class Table
 {
@@ -18,7 +19,7 @@ private:
     void count_rows_and_cols(std::ifstream &);
     void build_table(std::ifstream &);
 
-    double evaluate_expression(const char *) const;
+    expression_value evaluate_expression(const Buffer_string &) const;
 
 public:
     Table();
@@ -34,17 +35,17 @@ public:
     void print_invalid_cells() const;
     void full_print() const; // Currently unused
 
-    const char *get_text_by_index(size_t, size_t) const;
-    double get_numeric_value_by_index(size_t, size_t) const;
+    const Buffer_string get_text_by_index(size_t, size_t) const;
+    expression_value get_numeric_value_by_index(size_t, size_t) const;
     size_t get_rows() const;
     size_t get_cols() const;
     size_t get_count_of_invalid_cells() const;
 
     void write_to_file(std::ofstream &) const;
 
-    bool mod_cell(size_t, size_t, char *);
-    bool mod_cell_with_formula(size_t, size_t, const char *);
-    bool string_is_valid_formula(const char *);
+    bool mod_cell(size_t, size_t, const Buffer_string &);
+    bool mod_cell_with_formula(size_t, size_t, const Buffer_string &);
+    bool string_is_valid_formula(const Buffer_string &);
 
     ~Table();
 };

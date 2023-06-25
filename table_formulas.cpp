@@ -1,15 +1,17 @@
 #include "table.h"
 
 #include <cmath>
+#include <iostream>
 
 #include "utils.h"
+#include "buffer_string.h"
 
-double Table::evaluate_expression(const char *calc) const
+using expression_value = double;
+
+const size_t MAX_ARR_SIZE{32};
+
+expression_value Table::evaluate_expression(const Buffer_string &calc) const
 {
-    if (calc == nullptr)
-    {
-        throw std::invalid_argument("Argument doesn't exist.");
-    }
 
     size_t line_index{0};
     if (calc[0] == '=')
@@ -17,15 +19,11 @@ double Table::evaluate_expression(const char *calc) const
         line_index = 1;
     }
 
-    const size_t stack_buffer_size{128};
-    double numbers_stack_1[stack_buffer_size]{};
-    char operators_stack_1[stack_buffer_size]{};
+    expression_value numbers_stack_1[MAX_ARR_SIZE]{};
+    char operators_stack_1[MAX_ARR_SIZE]{};
     size_t numbers_index{0};
     size_t operators_index{0};
     bool last_was_number{0};
-
-    const size_t string_buffer_size{1024};
-    const size_t small_string_buffer_size{32};
 
     try
     {
@@ -39,7 +37,7 @@ double Table::evaluate_expression(const char *calc) const
             else if (calc[line_index] == '(')
             {
                 line_index++;
-                char bracket_buffer[string_buffer_size]{};
+                Buffer_string bracket_buffer;
                 size_t bracket_index{0};
                 size_t bracket_difference{1};
                 while (bracket_difference && calc[line_index] != '\0')
@@ -57,10 +55,11 @@ double Table::evaluate_expression(const char *calc) const
                         }
                     }
 
-                    bracket_buffer[bracket_index++] = calc[line_index++];
+                    bracket_buffer.append(calc[line_index++]);
+                    bracket_index++;
                 }
 
-                double bracket_value;
+                expression_value bracket_value;
                 try
                 {
                     bracket_value = evaluate_expression(bracket_buffer);
@@ -85,22 +84,22 @@ double Table::evaluate_expression(const char *calc) const
 
             else if (char_is_numeric(calc[line_index]))
             {
-                char current_number[small_string_buffer_size]{};
+                Buffer_string current_number;
                 size_t digit_index{0};
 
                 while (char_is_numeric(calc[line_index]) && calc[line_index] != '\0')
                 {
-                    current_number[digit_index++] = calc[line_index++];
+                    current_number.append(calc[line_index++]);
                 }
 
-                if (!last_was_number && str_is_whole_number(current_number))
+                if (!last_was_number && current_number.is_whole())
                 {
-                    numbers_stack_1[numbers_index++] = str_to_whole(current_number);
+                    numbers_stack_1[numbers_index++] = current_number.to_whole();
                     last_was_number = 1;
                 }
-                else if (!last_was_number && str_is_decimal_number(current_number))
+                else if (!last_was_number && current_number.is_decimal())
                 {
-                    numbers_stack_1[numbers_index++] = str_to_float(current_number);
+                    numbers_stack_1[numbers_index++] = current_number.to_decimal();
                     last_was_number = 1;
                 }
                 else if (last_was_number)
@@ -116,11 +115,10 @@ double Table::evaluate_expression(const char *calc) const
             else if (calc[line_index] == 'R')
             {
                 line_index++;
-                char row_index[small_string_buffer_size]{""};
-                size_t row_char_index{0};
+                Buffer_string row_index;
                 while (calc[line_index] >= '0' && calc[line_index] <= '9' && calc[line_index] != '\0')
                 {
-                    row_index[row_char_index++] = calc[line_index++];
+                    row_index.append(calc[line_index++]);
                 }
 
                 if (calc[line_index] != 'C')
@@ -128,15 +126,14 @@ double Table::evaluate_expression(const char *calc) const
                     throw std::invalid_argument("Wrong cell format.");
                 }
 
-                char col_index[small_string_buffer_size]{""};
-                size_t col_char_index{0};
+                Buffer_string col_index;
                 line_index++;
                 while (calc[line_index] >= '0' && calc[line_index] <= '9' && calc[line_index] != '\0')
                 {
-                    col_index[col_char_index++] = calc[line_index++];
+                    col_index.append(calc[line_index++]);
                 }
 
-                if (!str_is_whole_number(row_index) || !str_is_whole_number(col_index))
+                if (!row_index.is_whole() || !col_index.is_whole())
                 {
                     throw std::invalid_argument("Invalid cell indice.");
                 }
@@ -145,10 +142,10 @@ double Table::evaluate_expression(const char *calc) const
                     throw std::invalid_argument("Two operators with no numbers inbetween.");
                 }
 
-                double indexed_cell_value{0.0};
+                expression_value indexed_cell_value{0.0};
                 try
                 {
-                    indexed_cell_value = get_numeric_value_by_index(str_to_whole(row_index) - 1, str_to_whole(col_index) - 1);
+                    indexed_cell_value = get_numeric_value_by_index(row_index.to_whole() - 1, col_index.to_whole() - 1);
                 }
                 catch (const std::invalid_argument &ia)
                 {
@@ -187,8 +184,8 @@ double Table::evaluate_expression(const char *calc) const
     }
 
     numbers_index = operators_index = 0;
-    double numbers_stack_2[stack_buffer_size]{};
-    char operators_stack_2[stack_buffer_size]{};
+    expression_value numbers_stack_2[MAX_ARR_SIZE]{};
+    char operators_stack_2[MAX_ARR_SIZE]{};
 
     for (size_t i = 0; i < operators_count; i++)
     {
@@ -198,7 +195,7 @@ double Table::evaluate_expression(const char *calc) const
             {
                 throw std::out_of_range("Accessed invalid index."); // Should not happen.
             }
-            double temp_result{numbers_stack_1[i]};
+            expression_value temp_result{numbers_stack_1[i]};
             while (operators_stack_1[i] == '^' && i < operators_count)
             {
                 try
@@ -237,8 +234,8 @@ double Table::evaluate_expression(const char *calc) const
     operators_count = operators_index;
 
     numbers_index = operators_index = 0;
-    double numbers_stack_3[stack_buffer_size]{};
-    char operators_stack_3[stack_buffer_size]{};
+    expression_value numbers_stack_3[MAX_ARR_SIZE]{};
+    char operators_stack_3[MAX_ARR_SIZE]{};
 
     for (size_t i = 0; i < operators_count; i++)
     {
@@ -248,7 +245,7 @@ double Table::evaluate_expression(const char *calc) const
             {
                 throw std::out_of_range("Accessed invalid index."); // Should not happen.
             }
-            double temp_result{numbers_stack_2[i]};
+            expression_value temp_result{numbers_stack_2[i]};
             while (operators_stack_2[i] == '/' || operators_stack_2[i] == '*' && i < operators_count)
             {
                 try
@@ -307,7 +304,7 @@ double Table::evaluate_expression(const char *calc) const
         }
     }
 
-    double total{numbers_stack_3[0]};
+    expression_value total{numbers_stack_3[0]};
 
     for (size_t i = 0; i < operators_index; i++)
     {
@@ -329,35 +326,34 @@ double Table::evaluate_expression(const char *calc) const
     return total;
 }
 
-bool Table::string_is_valid_formula(const char *expression)
+bool Table::string_is_valid_formula(const Buffer_string &expression)
 {
     try
     {
         evaluate_expression(expression);
-        return 1;
+        return true;
     }
     catch (const std::logic_error &le)
     {
-        return 0;
+        return false;
     }
 }
 
-bool Table::mod_cell_with_formula(size_t row_index, size_t col_index, const char *expression)
+bool Table::mod_cell_with_formula(size_t row_index, size_t col_index, const Buffer_string &expression)
 {
-    double mod_value;
+    expression_value mod_value;
     try
     {
         mod_value = evaluate_expression(expression);
-        const size_t buffer_size(1024);
-        char str_buffer[buffer_size]{};
-        number_to_str(str_buffer, mod_value);
-        return mod_cell(row_index, col_index, str_buffer);
+        Buffer_string str_buff(decimal_to_str(mod_value));
+        return mod_cell(row_index, col_index, str_buff);
     }
     catch (const std::logic_error &le)
     {
         std::cerr << le.what() << '\n';
         char error_string[7]{"ERROR!"};
-        mod_cell(row_index, col_index, error_string);
+        Buffer_string error_bffr{"ERROR!"};
+        mod_cell(row_index, col_index, error_bffr);
         return 0;
     }
 }

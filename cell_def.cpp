@@ -1,32 +1,13 @@
 #include "cell.h"
 
-#include <iostream>
-#include <cstring>
-
 #include "utils.h"
+#include "buffer_string.h"
 
 void Cell::free()
 {
-    if (_type == DataType::Integer)
-    {
-        _data.long_value = 0;
-    }
-    else if (_type == DataType::FloatingPoint)
-    {
-        _data.double_value = 0.0;
-    }
-    else
-    {
-        if (_data.string_value != utils::empty_string)
-        {
-            delete[] _data.string_value;
-        }
-        _data.string_value = nullptr;
-    }
-
+    _value = 0.0;
     _type = DataType::Invalid;
-    delete[] _text;
-    _text = nullptr;
+    _text.clear();
 }
 
 DataType Cell::get_type() const
@@ -37,127 +18,61 @@ DataType Cell::get_type() const
 void Cell::copy_from(const Cell &src)
 {
     _type = src._type;
-    if (src._text != nullptr)
-    {
-        delete[] _text;
-        _text = new char[strlen(src._text) + 1];
-        strncpy(_text, src._text, strlen(src._text) + 1);
-    }
-    else
-    {
-        _text = nullptr;
-    }
-
-    if (_type == DataType::Integer)
-    {
-        _data.long_value = src._data.long_value;
-    }
-    else if (_type == DataType::FloatingPoint)
-    {
-        _data.double_value = src._data.double_value;
-    }
-    else
-    {
-        delete[] _data.string_value;
-        if (src._data.string_value != nullptr)
-        {
-            _data.string_value = new char[strlen(src._data.string_value) + 1];
-            strncpy(_data.string_value, src._data.string_value, strlen(src._data.string_value) + 1);
-        }
-    }
+    _text = src._text;
+    _value = src._value;
 }
 
 double Cell::get_numeric_value() const
 {
-    if (_type == DataType::Integer)
-    {
-        return _data.long_value;
-    }
-    else if (_type == DataType::FloatingPoint)
-    {
-        return _data.double_value;
-    }
-    else
-    {
-        return 0.0;
-    }
+    return _value;
 }
 
-const char *Cell::get_string_data() const
+size_t Cell::get_text_capacity() const
 {
-    return _data.string_value;
+    return _text.get_capacity();
 }
 
-long Cell::get_long_data() const
-{
-    return _data.long_value;
-}
-
-double Cell::get_double_data() const
-{
-    return _data.double_value;
-}
-
-Cell::Cell() : _type(DataType::Invalid), _text(new char[1]{}) { _data.string_value = nullptr; }
+Cell::Cell() : _type(DataType::Invalid), _text(""), _value(0.0) {}
 
 Cell::Cell(const char *input)
 {
-    if (input != nullptr)
-    {
-        _text = new char[strlen(input) + 1];
-        strncpy(_text, input, strlen(input) + 1);
-    }
-    else
-    {
-        _text = nullptr;
-    }
+    _text = input; // Buffer_string has nullptr protection
 
-    if (str_is_whole_number(input))
+    copy_from(Cell(_text));
+}
+
+Cell::Cell(const Buffer_string &input)
+{
+    _text = input;
+
+    if (input.is_whole())
     {
         _type = DataType::Integer;
-        _data.long_value = str_to_whole(input);
+        _value = input.to_whole();
     }
-    else if (str_is_decimal_number(input))
+    else if (input.is_decimal())
     {
-        _type = DataType::FloatingPoint;
-        _data.double_value = str_to_float(input);
+        _type = DataType::Decimal;
+        _value = input.to_decimal();
     }
-    else if (str_is_in_quotes(input))
+    else if (input.is_quoted())
     {
-        if (input != nullptr)
-        {
-            _type = DataType::CharString;
-            if (strlen(input) == 0)
-            {
-                _data.string_value = utils::empty_string;
-            }
-            else
-            {
-                _data.string_value = new char[strlen(input) - 1]{};
-                for (size_t i = 1; i < strlen(input) - 1; i++)
-                {
-                    _data.string_value[i - 1] = input[i];
-                }
-            }
-        }
-        else
-        {
-            _type = DataType::CharString;
-            _data.string_value = utils::empty_string; // Can't happen
-        }
+        _type = DataType::Quoted;
+        _text = _text.remove_quotes();
+        _value = 0.0;
     }
     else
     {
-        if (input == nullptr || input == utils::empty_string)
+        if (input.is_empty())
         {
-            _type = DataType::CharString;
-            _data.string_value = utils::empty_string;
+            _type = DataType::Quoted;
         }
         else
         {
             _type = DataType::Invalid;
-            _data.string_value = utils::empty_string;
         }
+        _text = "";
+        _value = 0.0;
     }
 }
 
@@ -170,26 +85,9 @@ Cell::Cell(const Cell &src)
     }
 }
 
-Cell::Cell(Cell &&src) : _text(src._text), _type(src._type)
+Cell::Cell(Cell &&src) : _text(src._text), _type(src._type), _value(src._value)
 {
-    src._text = nullptr;
-    if (src._type == DataType::Integer)
-    {
-        _data.long_value = src._data.long_value;
-        src._data.long_value = 0;
-    }
-    else if (src._type == DataType::FloatingPoint)
-    {
-        _data.double_value = src._data.double_value;
-        src._data.double_value = 0;
-    }
-    else
-    {
-        _data.string_value = src._data.string_value;
-        src._data.string_value = nullptr;
-    }
-
-    src._type = DataType::Invalid;
+    src.free();
 }
 
 Cell &Cell::operator=(const Cell &src)
@@ -209,46 +107,16 @@ Cell &Cell::operator=(Cell &&src)
     {
         free();
         _text = src._text;
-        src._text = nullptr;
-
-        if (src._type == DataType::Integer)
-        {
-            _data.long_value = src._data.long_value;
-            src._data.long_value = 0;
-        }
-        else if (src._type == DataType::FloatingPoint)
-        {
-            _data.double_value = src._data.double_value;
-            src._data.double_value = 0;
-        }
-        else
-        {
-            _data.string_value = src._data.string_value;
-            src._data.string_value = nullptr;
-        }
-
         _type = src._type;
-        src._type = DataType::Invalid;
+        _value = src._value;
     }
 
     return *this;
 }
 
-Cell::~Cell()
+Buffer_string Cell::get_text() const
 {
-    free();
-}
-
-const char *Cell::get_text() const
-{
-    if (_text != nullptr)
-    {
-        return _text;
-    }
-    else
-    {
-        return utils::empty_string;
-    }
+    return _text;
 }
 
 const char *type_to_char(const DataType &c1)
@@ -256,43 +124,42 @@ const char *type_to_char(const DataType &c1)
     switch (c1)
     {
     case DataType::Integer:
-        return "Integer";
-    case DataType::FloatingPoint:
-        return "Float";
-    case DataType::CharString:
-        return "String";
+        return string_utils::integer;
+    case DataType::Decimal:
+        return string_utils::decimal;
+    case DataType::Quoted:
+        return string_utils::quoted;
     case DataType::Invalid:
-        return "Invalid";
+        return string_utils::invalid;
     default:
-        return "Broke";
+        return string_utils::broken;
     }
 }
 
-void parse_row(const char *line, Cell *cells, size_t cell_count)
+void parse_row(const Buffer_string &line, Cell *cells, size_t cell_count)
 {
     size_t cell_index{0}, line_index{0};
 
-    const size_t buffer_size{1024};
-    char text_buffer[buffer_size]{};
+    Buffer_string row_str;
 
     while (line[line_index] != '\0' && cell_index < cell_count)
     {
+        row_str.clear();
         size_t buffer_index{0};
-        while (line[line_index] != ',' && line[line_index] != '\0' && buffer_index < buffer_size)
+        while (line[line_index] != ',' && line[line_index] != '\0')
         {
             if (line[line_index] == '"')
             {
                 do
                 {
-                    text_buffer[buffer_index++] = line[line_index++];
-                } while (line[line_index] != '"' && line[line_index] != '\0' && buffer_index < buffer_size);
+                    row_str.append(line[line_index++]);
+                } while (line[line_index] != '"' && line[line_index] != '\0');
             }
 
-            text_buffer[buffer_index++] = line[line_index++];
+            row_str.append(line[line_index++]);
         }
-        text_buffer[buffer_index] = '\0';
-        cells[cell_index++] = Cell(remove_whitespaces(text_buffer));
-        text_buffer[0] = '\0';
+
+        cells[cell_index++] = Cell(row_str.trim_whitespaces());
         if (line[line_index] == ',')
         {
             line_index++;

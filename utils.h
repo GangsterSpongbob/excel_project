@@ -1,27 +1,27 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef UTILS_H
+#define UTILS_H
 
-namespace utils
+#include <cstddef>
+
+#include "buffer_string.h"
+
+namespace string_utils
 {
-    extern char empty_string[1];
+    constexpr char empty[1]{""};
+    constexpr char integer[8]{"Integer"};
+    constexpr char decimal[8]{"Decimal"};
+    constexpr char quoted[7]{"Quoted"};
+    constexpr char invalid[8]{"Invalid"};
+    constexpr char broken[7]{"Broken"};
+    constexpr char error[7]{"ERROR!"};
 }
-
-extern char *remove_whitespaces(char *);
-
-extern bool str_is_in_quotes(const char *);
-extern bool str_is_whole_number(const char *);
-extern bool str_is_decimal_number(const char *);
-extern bool str_is_formula(const char *);
 
 extern bool char_is_operator(char);
 extern bool char_is_numeric(char);
 
-extern long str_to_whole(const char *);
-extern double str_to_float(const char *);
+extern Buffer_string long_to_str(long);
+extern Buffer_string decimal_to_str(double);
 
-extern void reverse_string(char *);
+extern long min(long, long);
 
-extern void long_to_str(char *, long);
-extern void number_to_str(char *, double);
-
-#endif // GLOBALS_H
+#endif // UTILS_H

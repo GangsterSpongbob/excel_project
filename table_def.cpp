@@ -3,9 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <cstring>
 
 #include "utils.h"
+#include "buffer_string.h"
 
 void Table::free()
 {
@@ -47,14 +47,13 @@ void Table::build_table(std::ifstream &file_in)
     }
 
     cells = new Cell[rows * cols];
-    const size_t buffer_size{1024};
 
-    char row_buffer[buffer_size];
-    char cell_buffer[buffer_size];
+    Buffer_string row_buffer;
+    Buffer_string cell_buffer;
 
     for (size_t i = 0; i < rows; i++)
     {
-        file_in.getline(row_buffer, buffer_size);
+        row_buffer.getline(file_in);
         Cell temp_cells[cols];
         parse_row(row_buffer, temp_cells, cols);
         for (size_t j = 0; j < cols; j++)
@@ -189,19 +188,19 @@ Table &Table::operator=(Table &&src)
     return *this;
 }
 
-bool Table::mod_cell(size_t row_index, size_t col_index, char *input_data)
+bool Table::mod_cell(size_t row_index, size_t col_index, const Buffer_string &input_data)
 {
     if (row_index < 0 || row_index > rows || col_index < 0 || col_index > cols)
     {
         return 0;
     }
 
-    if (!str_is_whole_number(input_data) && !str_is_decimal_number(input_data) && !str_is_in_quotes(input_data))
+    if (!input_data.is_whole() && !input_data.is_decimal() && !input_data.is_quoted())
     {
         return 0;
     }
 
-    cells[cols * row_index + col_index] = Cell(remove_whitespaces(input_data)); // Prone to errors, double check.
+    cells[cols * row_index + col_index] = Cell(input_data.trim_whitespaces());
     return 1;
 }
 
@@ -237,13 +236,13 @@ void Table::print_table() const
         for (size_t j = 0; j < cols; j++)
         {
             size_t current_len{0};
-            if (cells[i * cols + j].get_type() == DataType::CharString)
+            if (cells[i * cols + j].get_type() == DataType::Quoted)
             {
-                current_len = strlen(cells[i * cols + j].get_text()) - 2;
+                current_len = cells[i * cols + j].get_text_capacity();
             }
-            else if (cells[i * cols + j].get_type() == DataType::Integer || cells[i * cols + j].get_type() == DataType::FloatingPoint)
+            else if (cells[i * cols + j].get_type() == DataType::Integer || cells[i * cols + j].get_type() == DataType::Decimal)
             {
-                current_len = strlen(cells[i * cols + j].get_text());
+                current_len = cells[i * cols + j].get_text_capacity();
             }
             else
             {
@@ -273,13 +272,13 @@ void Table::print_table() const
         std::cout << '|';
         for (size_t j = 0; j < cols; j++)
         {
-            if (cells[i * cols + j].get_type() == DataType::Integer || cells[i * cols + j].get_type() == DataType::FloatingPoint)
+            if (cells[i * cols + j].get_type() == DataType::Integer || cells[i * cols + j].get_type() == DataType::Decimal)
             {
                 std::cout << ' ' << std::setw(col_width[j]) << std::left << cells[i * cols + j].get_text() << " |";
             }
-            else if (cells[i * cols + j].get_type() == DataType::CharString)
+            else if (cells[i * cols + j].get_type() == DataType::Quoted)
             {
-                std::cout << ' ' << std::setw(col_width[j]) << std::left << cells[i * cols + j].get_string_data() << " |";
+                std::cout << ' ' << std::setw(col_width[j]) << std::left << cells[i * cols + j].get_text() << " |";
             }
             else
             {
@@ -387,7 +386,7 @@ void Table::full_print() const
     std::cout << '\n';
 }
 
-const char *Table::get_text_by_index(size_t row_index, size_t col_index) const
+const Buffer_string Table::get_text_by_index(size_t row_index, size_t col_index) const
 {
     if (row_index < rows && col_index < cols && row_index >= 0 && col_index >= 0)
     {
@@ -395,7 +394,7 @@ const char *Table::get_text_by_index(size_t row_index, size_t col_index) const
     }
     else
     {
-        return utils::empty_string;
+        return string_utils::empty;
     }
 }
 

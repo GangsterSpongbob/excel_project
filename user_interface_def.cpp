@@ -1,31 +1,28 @@
 #include "user_interface.h"
 
 #include <iostream>
-#include <cstring>
 
 #include "utils.h"
 #include "table.h"
 
 void user_interface()
 {
-    const size_t buffer_size{1024};
-    char text_buffer[buffer_size]{};
+    Buffer_string text_buff{"asd"};
 
-    std::cout
-        << "Enter name of file to read from or name of new file: ";
-    std::cin.getline(text_buffer, buffer_size);
+    std::cout << "Enter name of existing file to read from: ";
+    text_buff.getline(std::cin);
+    std::cout << "Buffer: " << text_buff << '\n';
 
-    std::ifstream file_in(remove_whitespaces(text_buffer));
+    std::ifstream file_in(text_buff.get_text_ptr());
     Table current_table(file_in);
-    char output_file_name[buffer_size];
-    strncpy(output_file_name, remove_whitespaces(text_buffer), buffer_size);
+    Buffer_string output_file_name(text_buff);
     file_in.close();
 
     bool do_print_types{0};
-    char msg[buffer_size]{"Table read successfully.\n"};
-    const char default_msg[]{"Enter next command:   <open> , <print types> , <close> , <save> , <save as> , <edit> , <exit>\n"};
+    Buffer_string msg_current{"Table read successfully.\n"};
+    Buffer_string msg_default{"Enter next command:   <open> , <print types> , <close> , <save> , <save as> , <edit> , <exit>\n"};
 
-    while (strcmp(text_buffer, "exit"))
+    while (text_buff != "exit")
     {
         std::cout << "\033[H\033[J";
         current_table.print_dimensions();
@@ -44,142 +41,142 @@ void user_interface()
             do_print_types = 0;
         }
 
-        std::cout << msg << default_msg;
-        std::cin.getline(text_buffer, buffer_size);
-        // std::cin >> text_buffer;
+        std::cout << msg_current << msg_default;
 
-        if (!strcmp(remove_whitespaces(text_buffer), "open"))
+        text_buff.getline(std::cin);
+
+        if (text_buff == "open")
         {
             std::cout << "Enter name of new file: ";
-            std::cin.getline(text_buffer, buffer_size);
-            std::ifstream file_in(remove_whitespaces(text_buffer));
+            text_buff.getline(std::cin);
+            std::ifstream file_in(text_buff.get_text_ptr());
             current_table = Table(file_in);
-            // Table table_new(file_in);
-            // current_table = table_new;
-            strncpy(output_file_name, remove_whitespaces(text_buffer), buffer_size);
+            output_file_name = text_buff;
             file_in.close();
-            strncpy(msg, "New table opened.\n", buffer_size);
+            msg_current = "New table opened.\n";
             continue;
         }
-        else if (!strcmp(remove_whitespaces(text_buffer), "close"))
+        else if (text_buff == "close")
         {
             std::cout << "Table closed. Enter name of new file or exit program: ";
-            std::cin.getline(text_buffer, buffer_size);
-            if (!strcmp(remove_whitespaces(text_buffer), "exit"))
+            text_buff.getline(std::cin);
+
+            if (text_buff == "exit")
             {
                 break;
             }
 
-            std::ifstream file_in(remove_whitespaces(text_buffer));
+            std::ifstream file_in(text_buff.get_text_ptr());
             current_table = Table(file_in);
-            strncpy(output_file_name, remove_whitespaces(text_buffer), buffer_size);
+            output_file_name = text_buff;
             file_in.close();
 
-            strncpy(msg, "Table opened successfully.\n", buffer_size);
+            msg_current = "Table opened successfully.\n";
             continue;
         }
-        else if (!strcmp(remove_whitespaces(text_buffer), "print types"))
+        else if (text_buff == "print types")
         {
             do_print_types = 1;
-            strncpy(msg, "", buffer_size);
+            msg_current = "";
             continue;
         }
-        else if (!strcmp(remove_whitespaces(text_buffer), "save"))
+        else if (text_buff == "save")
         {
-            std::ofstream file_out(output_file_name);
+            std::ofstream file_out(output_file_name.get_text_ptr());
             current_table.write_to_file(file_out);
             file_out.close();
-            strncpy(msg, "Table saved to source file.\n", buffer_size);
+            msg_current = "Table saved to source file.\n";
             continue;
         }
-        else if (!strcmp(remove_whitespaces(text_buffer), "save as"))
+        else if (text_buff == "save as")
         {
             std::cout << "Enter name of destination file: ";
-            std::cin.getline(text_buffer, buffer_size);
-            strncpy(output_file_name, text_buffer, buffer_size);
-            std::ofstream file_out(output_file_name);
+            text_buff.getline(std::cin);
+            output_file_name = text_buff;
+            std::ofstream file_out(output_file_name.get_text_ptr());
             current_table.write_to_file(file_out);
             file_out.close();
-            strncpy(msg, "Table saved to new file.\n", buffer_size);
+            msg_current = "Table saved to new file.\n";
             continue;
         }
-        else if (!strcmp(remove_whitespaces(text_buffer), "edit"))
+        else if (text_buff == "edit")
         {
             std::cout << "Enter row index starting from 1: ";
+
             long row_index;
-            std::cin.getline(text_buffer, buffer_size);
-            if (str_is_whole_number(remove_whitespaces(text_buffer)))
+            text_buff.getline(std::cin);
+            if (text_buff.is_whole())
             {
-                row_index = str_to_whole(remove_whitespaces(text_buffer)) - 1;
+                row_index = text_buff.to_whole() - 1;
                 if (row_index < 0 || row_index > current_table.get_rows())
                 {
-                    strncpy(msg, "Invalid row index!\n", buffer_size);
+                    msg_current = "Invalid row index.\n";
                     continue;
                 }
             }
             else
             {
-                strncpy(msg, "Invalid input for row!\n", buffer_size);
+                msg_current = "Invalid input for row.\n";
                 continue;
             }
 
             long col_index;
             std::cout << "Enter column index starting from 1: ";
-            std::cin.getline(text_buffer, buffer_size);
-            if (str_is_whole_number(remove_whitespaces(text_buffer)))
+            text_buff.getline(std::cin);
+            if (text_buff.to_whole())
             {
-                col_index = str_to_whole(remove_whitespaces(text_buffer)) - 1;
+                col_index = text_buff.to_whole() - 1;
                 if (col_index < 0 || col_index > current_table.get_cols())
                 {
-                    strncpy(msg, "Invalid column index!\n", buffer_size);
+                    msg_current = "Invalid column index!\n";
                     continue;
                 }
             }
             else
             {
-                strncpy(msg, "Invalid input for column!\n", buffer_size);
+                msg_current = "Invalid input for column!\n";
                 continue;
             }
 
             std::cout << "Data of current cell (" << row_index << ',' << col_index << ") is: " << current_table.get_text_by_index(row_index, col_index) << '\n';
             std::cout << "Enter new data for cell (" << row_index << ',' << col_index << "): ";
-            std::cin.getline(text_buffer, buffer_size);
+            text_buff.getline(std::cin);
 
-            if (str_is_in_quotes(text_buffer) || str_is_whole_number(text_buffer) || str_is_decimal_number(text_buffer))
+            if (text_buff.is_quoted() || text_buff.is_whole() || text_buff.is_decimal())
             {
-                if (current_table.mod_cell(row_index, col_index, remove_whitespaces(text_buffer)))
+                if (current_table.mod_cell(row_index, col_index, text_buff))
                 {
-                    strncpy(msg, "Cell updated successfully!\n", buffer_size);
+                    msg_current = "Cell updated successfully.\n";
                 }
                 else
                 {
-                    strncpy(msg, "Cell was not updated due to invalid data input!\n", buffer_size); // shouldn't happen!
+                    msg_current = "Cell was not updated due to invalid data input!\n";
                 }
             }
-            else if (current_table.string_is_valid_formula(text_buffer))
+            else if (current_table.string_is_valid_formula(text_buff))
             {
-                if (current_table.mod_cell_with_formula(row_index, col_index, remove_whitespaces(text_buffer)))
+                if (current_table.mod_cell_with_formula(row_index, col_index, text_buff))
                 {
-                    strncpy(msg, "Cell updated successfully!\n", buffer_size);
+                    msg_current = "Cell updated successfully.\n";
                 }
                 else
                 {
-                    strncpy(msg, "Cell was updated to \"ERROR!\" due to invalid expression!\n", buffer_size); // also shouldn't happen
+                    msg_current = "Cell was updated to \"ERROR!\" due to invalid expression!\n";
                 }
             }
             else
             {
-                strncpy(msg, "Invalid cell data! Cell will not be updated!\n", buffer_size);
+                msg_current = "Invalid cell data! Cell will not be updated!\n";
             }
             continue;
         }
-        else if (!strcmp(text_buffer, "exit"))
+        else if (text_buff == "exit")
         {
             break;
         }
         else
         {
-            strncpy(msg, "Invalid command!\n", buffer_size);
+            msg_current = "Invalid command!\n";
             continue;
         }
     }
