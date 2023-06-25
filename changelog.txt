@@ -1,12 +1,8 @@
- $ Implemented class Buffer_string for static char arrays with a const limited size;
- $ Replaced most instances of char * arrays with Buffer_string;
- $ Renamed more variables and functions;
- $ Added 5 more global char[] variables to string_utils.h;
- $ type_to_char() now returns utils string variables;
- $ Cell objects now only have a single _value of type double;
+ $ Added README.md file;
 
  to implement:
  ** Urgent:
 
  ** Future implementation reminders:
  # Move user_interface() and evaluate_expression() into separate functions;
+ # Edge cases;
