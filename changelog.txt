@@ -1,4 +1,6 @@
- $ Added README.md file;
+ $ Added new container class Stack;
+ $ Changed the maximum length of Buffer_string to 256;
+ $ Minor ISO code optimizations;
 
  to implement:
  ** Urgent:

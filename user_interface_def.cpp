@@ -103,7 +103,7 @@ void user_interface()
         {
             std::cout << "Enter row index starting from 1: ";
 
-            long row_index;
+            size_t row_index;
             text_buff.getline(std::cin);
             if (text_buff.is_whole())
             {
@@ -120,7 +120,7 @@ void user_interface()
                 continue;
             }
 
-            long col_index;
+            size_t col_index;
             std::cout << "Enter column index starting from 1: ";
             text_buff.getline(std::cin);
             if (text_buff.to_whole())

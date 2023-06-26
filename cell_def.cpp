@@ -85,7 +85,7 @@ Cell::Cell(const Cell &src)
     }
 }
 
-Cell::Cell(Cell &&src) : _text(src._text), _type(src._type), _value(src._value)
+Cell::Cell(Cell &&src) : _type(src._type), _text(src._text), _value(src._value)
 {
     src.free();
 }
@@ -145,7 +145,6 @@ void parse_row(const Buffer_string &line, Cell *cells, size_t cell_count)
     while (line[line_index] != '\0' && cell_index < cell_count)
     {
         row_str.clear();
-        size_t buffer_index{0};
         while (line[line_index] != ',' && line[line_index] != '\0')
         {
             if (line[line_index] == '"')

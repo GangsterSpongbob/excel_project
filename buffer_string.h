@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <fstream>
 
-constexpr size_t MAX_BUFFER_SIZE{1024};
+constexpr size_t MAX_BUFFER_SIZE{256};
 
 class Buffer_string
 {
@@ -16,6 +16,7 @@ public:
     Buffer_string();
     Buffer_string(const char *);
     Buffer_string(const Buffer_string &);
+    ~Buffer_string() = default;
 
     void copy_from(const Buffer_string &);
     void copy_from(const char *);

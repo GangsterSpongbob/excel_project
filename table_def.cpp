@@ -54,12 +54,13 @@ void Table::build_table(std::ifstream &file_in)
     for (size_t i = 0; i < rows; i++)
     {
         row_buffer.getline(file_in);
-        Cell temp_cells[cols];
+        Cell *temp_cells{new Cell[cols]};
         parse_row(row_buffer, temp_cells, cols);
         for (size_t j = 0; j < cols; j++)
         {
             cells[cols * i + j] = temp_cells[j];
         }
+        delete[] temp_cells;
     }
 
     file_in.clear();
@@ -233,7 +234,7 @@ void Table::write_to_file(std::ofstream &file_out) const
 
 void Table::print_table() const
 {
-    size_t col_width[cols];
+    size_t *col_width{new size_t[cols]};
     for (size_t i = 0; i < cols; i++)
     {
         col_width[i] = 0;
@@ -307,6 +308,8 @@ void Table::print_table() const
         std::cout << '+';
     }
     std::cout << '\n';
+
+    delete[] col_width;
 }
 
 void Table::print_types() const

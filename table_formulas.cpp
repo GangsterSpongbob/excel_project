@@ -85,7 +85,6 @@ expression_value Table::evaluate_expression(const Buffer_string &calc) const
             else if (char_is_numeric(calc[line_index]))
             {
                 Buffer_string current_number;
-                size_t digit_index{0};
 
                 while (char_is_numeric(calc[line_index]) && calc[line_index] != '\0')
                 {
@@ -246,7 +245,7 @@ expression_value Table::evaluate_expression(const Buffer_string &calc) const
                 throw std::out_of_range("Accessed invalid index."); // Should not happen.
             }
             expression_value temp_result{numbers_stack_2[i]};
-            while (operators_stack_2[i] == '/' || operators_stack_2[i] == '*' && i < operators_count)
+            while ((operators_stack_2[i] == '/' || operators_stack_2[i] == '*') && i < operators_count)
             {
                 try
                 {
@@ -351,9 +350,7 @@ bool Table::mod_cell_with_formula(size_t row_index, size_t col_index, const Buff
     catch (const std::logic_error &le)
     {
         std::cerr << le.what() << '\n';
-        char error_string[7]{"ERROR!"};
-        Buffer_string error_bffr{"ERROR!"};
-        mod_cell(row_index, col_index, error_bffr);
+        mod_cell(row_index, col_index, "ERROR!");
         return 0;
     }
 }
