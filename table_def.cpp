@@ -1,75 +1,18 @@
 #include "table.h"
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
+#include "cell.h"
 
-#include "utils.h"
-#include "buffer_string.h"
-
-void Table::free()
+void Table::set_all_to_empty()
 {
-    delete[] cells;
-    cells = nullptr;
-    rows = cols = 0;
-}
-
-void Table::copy_from(const Table &src)
-{
-    rows = src.rows;
-    cols = src.cols;
-    if (src.cells != nullptr)
+    for (size_t i = 0; i < MAX_COLUMN_COUNT; i++)
     {
-        cells = new Cell[src.rows * src.cols];
-        for (size_t i = 0; i < rows * cols; i++)
-        {
-            cells[i] = src.cells[i];
-        }
+        data[i] = Row();
     }
-    else
-    {
-        cells = nullptr;
-    }
-}
-
-Table::Table() : rows(0), cols(0), cells(nullptr) {}
-
-Table::~Table()
-{
-    free();
-}
-
-void Table::build_table(std::ifstream &file_in)
-{
-    if (cells != nullptr)
-    {
-        delete[] cells;
-    }
-
-    cells = new Cell[rows * cols];
-
-    Buffer_string row_buffer;
-    Buffer_string cell_buffer;
-
-    for (size_t i = 0; i < rows; i++)
-    {
-        row_buffer.getline(file_in);
-        Cell *temp_cells{new Cell[cols]};
-        parse_row(row_buffer, temp_cells, cols);
-        for (size_t j = 0; j < cols; j++)
-        {
-            cells[cols * i + j] = temp_cells[j];
-        }
-        delete[] temp_cells;
-    }
-
-    file_in.clear();
-    file_in.seekg(0, std::ios::beg);
 }
 
 void Table::count_rows_and_cols(std::ifstream &file_in)
 {
-    rows = cols = 1;
+    row_count = column_count = 1;
     if (!file_in.is_open())
     {
         std::cout << "Failed to open input file.\n";
@@ -82,7 +25,7 @@ void Table::count_rows_and_cols(std::ifstream &file_in)
     {
         if (ch == '\n')
         {
-            rows++;
+            row_count++;
         }
     }
 
@@ -115,9 +58,9 @@ void Table::count_rows_and_cols(std::ifstream &file_in)
             file_in.get(ch);
         }
 
-        if (current_cols > cols)
+        if (current_cols > column_count)
         {
-            cols = current_cols;
+            column_count = current_cols;
         }
     }
 
@@ -125,148 +68,39 @@ void Table::count_rows_and_cols(std::ifstream &file_in)
     file_in.seekg(0, std::ios::beg);
 }
 
-Table::Table(std::ifstream &file_in) : rows(0), cols(0), cells(nullptr)
+Table::Table() : row_count(1), column_count(1)
 {
-    if (!file_in.is_open())
-    {
-        std::cout << "Failed to open input file.\n";
-        cells = new Cell[1];
-        return;
-    }
+    set_all_to_empty();
+}
 
+Table::Table(std::ifstream &file_in)
+{
+    set_all_to_empty();
     count_rows_and_cols(file_in);
-
-    file_in.clear();
-    file_in.seekg(0, std::ios::beg);
-
-    build_table(file_in);
-
-    file_in.clear();
-    file_in.seekg(0, std::ios::beg);
-}
-
-Table::Table(const Table &src)
-{
-    if (this != &src)
+    for (size_t i = 0; i < row_count; i++)
     {
-        free();
-        copy_from(src);
-    }
-}
-
-Table::Table(Table &&src) : rows(src.rows), cols(src.cols), cells(src.cells)
-{
-    src.rows = 0;
-    src.cols = 0;
-    src.cells = nullptr;
-}
-
-Table &Table::operator=(const Table &src)
-{
-    if (this != &src)
-    {
-        free();
-        copy_from(src);
-    }
-
-    return *this;
-}
-
-Table &Table::operator=(Table &&src)
-{
-    if (this != &src)
-    {
-        free();
-        rows = src.rows;
-        cols = src.cols;
-        cells = src.cells;
-
-        src.rows = 0;
-        src.cols = 0;
-        src.cells = nullptr;
-    }
-
-    return *this;
-}
-
-bool Table::mod_cell(size_t row_index, size_t col_index, const Buffer_string &input_data)
-{
-    if (row_index < 0 || row_index > rows || col_index < 0 || col_index > cols)
-    {
-        return 0;
-    }
-
-    if (!input_data.is_whole() && !input_data.is_decimal() && !input_data.is_quoted())
-    {
-        return 0;
-    }
-
-    cells[cols * row_index + col_index] = Cell(input_data.trim_whitespaces());
-    return 1;
-}
-
-void Table::write_to_file(std::ofstream &file_out) const
-{
-    for (size_t i = 0; i < rows; i++)
-    {
-        for (size_t j = 0; j < cols; j++)
-        {
-            if (cells[i * cols + j].get_type() == DataType::Quoted)
-            {
-                file_out << cells[i * cols + j].get_text().add_quotes();
-            }
-            else
-            {
-                file_out << cells[i * cols + j].get_text();
-            }
-
-            if (j != cols - 1)
-            {
-                file_out << ',';
-            }
-        }
-        if (i != rows - 1)
-        {
-            file_out << '\n';
-        }
+        Buffer_string temp;
+        temp.getline(file_in);
+        data[i] = Row(temp);
     }
 }
 
 void Table::print_table() const
 {
-    size_t *col_width{new size_t[cols]};
-    for (size_t i = 0; i < cols; i++)
-    {
-        col_width[i] = 0;
-    }
+    size_t col_width[MAX_COLUMN_COUNT]{}; // Initialize separately
 
-    for (size_t i = 0; i < rows; i++)
+    for (size_t i = 0; i < row_count; i++)
     {
-        for (size_t j = 0; j < cols; j++)
+        for (size_t j = 0; j < column_count; j++)
         {
             size_t current_len{0};
-            if (cells[i * cols + j].get_type() == DataType::Quoted)
-            {
-                current_len = cells[i * cols + j].get_text_capacity();
-            }
-            else if (cells[i * cols + j].get_type() == DataType::Integer || cells[i * cols + j].get_type() == DataType::Decimal)
-            {
-                current_len = cells[i * cols + j].get_text_capacity();
-            }
-            else
-            {
-                current_len = 0;
-            }
-
-            if (current_len > col_width[j])
-            {
-                col_width[j] = current_len;
-            }
+            current_len = data[i][j]->get_text_capacity();
+            col_width[j] = current_len > col_width[j] ? current_len : col_width[j];
         }
     }
 
     std::cout << '+';
-    for (size_t i = 0; i < cols; i++)
+    for (size_t i = 0; i < column_count; i++)
     {
         for (size_t j = 0; j < col_width[i] + 2; j++)
         {
@@ -276,30 +110,18 @@ void Table::print_table() const
     }
     std::cout << '\n';
 
-    for (size_t i = 0; i < rows; i++)
+    for (size_t i = 0; i < row_count; i++)
     {
         std::cout << '|';
-        for (size_t j = 0; j < cols; j++)
+        for (size_t j = 0; j < column_count; j++)
         {
-            if (cells[i * cols + j].get_type() == DataType::Integer || cells[i * cols + j].get_type() == DataType::Decimal)
-            {
-                std::cout << ' ' << std::setw(col_width[j]) << std::left << cells[i * cols + j].get_text() << " |";
-            }
-            else if (cells[i * cols + j].get_type() == DataType::Quoted)
-            {
-                std::cout << ' ' << std::setw(col_width[j]) << std::left << cells[i * cols + j].get_text() << " |";
-            }
-            else
-            {
-                std::cout << ' ' << std::setw(col_width[j]) << std::left << ""
-                          << " |";
-            }
+            std::cout << ' ' << std::setw(col_width[j]) << std::left << data[i][j]->get_text().remove_quotes() << " |";
         }
         std::cout << '\n';
     }
 
     std::cout << '+';
-    for (size_t i = 0; i < cols; i++)
+    for (size_t i = 0; i < column_count; i++)
     {
         for (size_t j = 0; j < col_width[i] + 2; j++)
         {
@@ -308,15 +130,13 @@ void Table::print_table() const
         std::cout << '+';
     }
     std::cout << '\n';
-
-    delete[] col_width;
 }
 
 void Table::print_types() const
 {
     const size_t cell_width{7}; // Max length of typename
     std::cout << '+';
-    for (size_t i = 0; i < cols; i++)
+    for (size_t i = 0; i < column_count; i++)
     {
         for (size_t j = 0; j < cell_width + 2; j++)
         {
@@ -326,17 +146,17 @@ void Table::print_types() const
     }
     std::cout << '\n';
 
-    for (size_t i = 0; i < rows; i++)
+    for (size_t i = 0; i < row_count; i++)
     {
         std::cout << '|';
-        for (size_t j = 0; j < cols; j++)
+        for (size_t j = 0; j < column_count; j++)
         {
-            std::cout << ' ' << std::setw(cell_width) << std::left << type_to_char(cells[i * cols + j].get_type()) << " |";
+            std::cout << ' ' << std::setw(cell_width) << std::left << type_to_char2(data[i][j]->get_type()) << " |";
         }
         std::cout << '\n';
     }
     std::cout << '+';
-    for (size_t i = 0; i < cols; i++)
+    for (size_t i = 0; i < column_count; i++)
     {
         for (size_t j = 0; j < cell_width + 2; j++)
         {
@@ -349,17 +169,41 @@ void Table::print_types() const
 
 size_t Table::get_rows() const
 {
-    return rows;
+    return row_count;
 }
 
 size_t Table::get_cols() const
 {
-    return cols;
+    return column_count;
 }
 
 void Table::print_dimensions() const
 {
-    std::cout << "Rows: " << rows << ", Cols: " << cols << '\n';
+    std::cout << "Rows: " << row_count << ", Cols: " << column_count << '\n';
+}
+
+size_t Table::get_count_of_invalid_cells() const
+{
+    size_t invalids{0};
+    for (size_t i = 0; i < row_count; i++)
+    {
+        for (size_t j = 0; j < column_count; j++)
+        {
+            invalids += data[i][j]->get_type() == DataType::Invalid;
+        }
+    }
+
+    return invalids;
+}
+
+double Table::get_value_at_index(size_t row_index, size_t col_index) const
+{
+    if (row_index < 0 || row_index > row_count - 1 || col_index < 0 || col_index > column_count - 1)
+    {
+        return 0.0;
+    }
+
+    return data[row_index][col_index]->get_numeric_value();
 }
 
 void Table::print_invalid_cells() const
@@ -369,11 +213,11 @@ void Table::print_invalid_cells() const
         return;
     }
 
-    for (size_t i = 0; i < rows; i++)
+    for (size_t i = 0; i < row_count; i++)
     {
-        for (size_t j = 0; j < cols; j++)
+        for (size_t j = 0; j < column_count; j++)
         {
-            if (cells[i * cols + j].get_type() == DataType::Invalid)
+            if (data[i][j]->get_type() == DataType::Invalid)
             {
                 std::cout << "Data at position (" << i + 1 << ',' << j + 1 << ") is invalid!\n";
             }
@@ -397,40 +241,45 @@ void Table::full_print() const
     std::cout << '\n';
 }
 
-const Buffer_string Table::get_text_by_index(size_t row_index, size_t col_index) const
+bool Table::mod_cell(size_t row_index, size_t col_index, const Buffer_string &input_data)
 {
-    if (row_index < rows && col_index < cols && row_index >= 0 && col_index >= 0)
+    if (row_index < 0 || row_index > row_count || col_index < 0 || col_index > column_count)
     {
-        return cells[row_index * cols + col_index].get_text();
+        return 0;
     }
-    else
+
+    if (!input_data.is_whole() && !input_data.is_decimal() && !input_data.is_quoted())
     {
-        return string_utils::empty;
+        return 0;
     }
+
+    data[row_index].modify_cell_at_index(col_index, input_data.trim_whitespaces());
+    return 1;
 }
 
-double Table::get_numeric_value_by_index(size_t row_index, size_t col_index) const
+void Table::write_to_file(std::ofstream &file_out) const
 {
-    if (row_index < rows && col_index < cols && row_index >= 0 && col_index >= 0)
+    for (size_t i = 0; i < row_count; i++)
     {
-        return cells[row_index * cols + col_index].get_numeric_value();
-    }
-    else
-    {
-        return 0.0;
-    }
-}
-
-size_t Table::get_count_of_invalid_cells() const
-{
-    size_t invalids{0};
-    for (size_t i = 0; i < rows; i++)
-    {
-        for (size_t j = 0; j < cols; j++)
+        for (size_t j = 0; j < column_count; j++)
         {
-            invalids += cells[i * cols + j].get_type() == DataType::Invalid;
+            if (data[i][j]->get_type() == DataType::Quoted)
+            {
+                file_out << data[i][j]->get_text().add_quotes();
+            }
+            else
+            {
+                file_out << data[i][j]->get_text();
+            }
+
+            if (j != column_count - 1)
+            {
+                file_out << ',';
+            }
+        }
+        if (i != row_count - 1)
+        {
+            file_out << '\n';
         }
     }
-
-    return invalids;
 }

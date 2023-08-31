@@ -138,7 +138,7 @@ void user_interface()
                 continue;
             }
 
-            std::cout << "Data of current cell (" << row_index << ',' << col_index << ") is: " << current_table.get_text_by_index(row_index, col_index) << '\n';
+            std::cout << "Data of current cell (" << row_index << ',' << col_index << ") is: " << current_table.get_value_at_index(row_index, col_index) << '\n';
             std::cout << "Enter new data for cell (" << row_index << ',' << col_index << "): ";
             text_buff.getline(std::cin);
 

@@ -1,6 +1,5 @@
- $ Added new container class Stack;
- $ Changed the maximum length of Buffer_string to 256;
- $ Minor ISO code optimizations;
+ # Cell is abstract and has four types of children : decimal, integer, quoted and invalid
+ # Created dynamic container Row to hold cells in a 1D array;
 
  to implement:
  ** Urgent:

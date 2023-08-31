@@ -144,7 +144,7 @@ expression_value Table::evaluate_expression(const Buffer_string &calc) const
                 expression_value indexed_cell_value{0.0};
                 try
                 {
-                    indexed_cell_value = get_numeric_value_by_index(row_index.to_whole() - 1, col_index.to_whole() - 1);
+                    indexed_cell_value = get_value_at_index(row_index.to_whole() - 1, col_index.to_whole() - 1);
                 }
                 catch (const std::invalid_argument &ia)
                 {

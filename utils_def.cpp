@@ -12,6 +12,38 @@ bool char_is_numeric(char c)
     return (c >= '0' && c <= '9') || c == '.';
 }
 
+extern bool string_is_valid_addresss(Buffer_string str)
+{
+    unsigned int index{0};
+
+    if (str[index++] != 'R')
+    {
+        return 0;
+    }
+
+    while (char_is_numeric(str[index]) && str[index] != '\0')
+    {
+        index++;
+    }
+
+    if (str[index++] != 'C')
+    {
+        return 0;
+    }
+
+    while (char_is_numeric(str[index] && str[index] != '\0'))
+    {
+        index++;
+    }
+
+    if (str[index] != '\0')
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
 Buffer_string long_to_str(long src)
 {
     if (src == 0)
